@@ -1,4 +1,4 @@
-import type { FishInput, MatchInputs } from "@fishwar/game-types";
+import type { FishermanInput, FishInput, MatchInputs } from "@fishwar/game-types";
 
 /** Tracks which physical keys (KeyboardEvent.code) are currently held. */
 export interface Keyboard {
@@ -41,6 +41,16 @@ function readFishInput(keyboard: Keyboard): FishInput {
   };
 }
 
+/** Hot-seat Fisherman controls: arrow keys walk (Up = toward the pond, -Z). */
+function readFishermanInput(keyboard: Keyboard): FishermanInput {
+  return {
+    move: {
+      x: axis(keyboard, "ArrowLeft", "ArrowRight"),
+      z: axis(keyboard, "ArrowUp", "ArrowDown"),
+    },
+  };
+}
+
 export function readMatchInputs(keyboard: Keyboard): MatchInputs {
-  return { fish: readFishInput(keyboard) };
+  return { fish: readFishInput(keyboard), fisherman: readFishermanInput(keyboard) };
 }

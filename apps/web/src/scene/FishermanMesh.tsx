@@ -13,8 +13,9 @@ export function FishermanMesh({ runner }: { runner: SimRunner }) {
   const ref = useRef<Mesh>(null);
 
   useFrame(() => {
-    const { x, y, z } = runner.getState().fisherman.position;
-    ref.current?.position.set(x, y + FEET_TO_CENTER, z);
+    const { position, yaw } = runner.getState().fisherman;
+    ref.current?.position.set(position.x, position.y + FEET_TO_CENTER, position.z);
+    ref.current?.rotation.set(0, yaw, 0);
   });
 
   return (

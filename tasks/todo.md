@@ -97,7 +97,7 @@ and releasing it lets the fish rise back to the surface. Y is always clamped to
 **Files likely touched:** `packages/game-core/src/systems/fishMovement.ts` + test, `packages/game-core/src/config.ts`, `apps/web/src/input/keyboard.ts`, `apps/web/src/scene/Pond.tsx`
 **Scope:** S
 
-### - [ ] Task 5: Fisherman moves on the dock
+### - [x] Task 5: Fisherman moves on the dock
 
 **Description:** Arrow keys → `FishermanInput.move` → `fishermanMovement` system.
 Same kinematic model as the fish, but with its own speed and clamped to the

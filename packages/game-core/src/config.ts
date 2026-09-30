@@ -31,6 +31,15 @@ export interface FishConfig {
   readonly surfaceTolerance: number;
 }
 
+export interface FishermanConfig {
+  /** Top walking speed on the dock (m/s). */
+  readonly moveSpeed: number;
+  readonly acceleration: number;
+  readonly deceleration: number;
+  /** Heading at spawn in radians; PI faces -Z, out over the pond. */
+  readonly spawnYaw: number;
+}
+
 /** Every gameplay tuning value. Passed in, never hard-coded in systems. */
 export interface MatchConfig {
   /** Simulation ticks per second. */
@@ -40,6 +49,7 @@ export interface MatchConfig {
   readonly pond: PondConfig;
   readonly dock: DockConfig;
   readonly fish: FishConfig;
+  readonly fisherman: FishermanConfig;
   readonly fishSpawn: Vec3;
   readonly fishermanSpawn: Vec3;
 }
@@ -73,6 +83,7 @@ export const DEFAULT_CONFIG: MatchConfig = {
     surfaceSpeed: 2,
     surfaceTolerance: 0.1,
   },
+  fisherman: { moveSpeed: 4, acceleration: 25, deceleration: 25, spawnYaw: Math.PI },
   fishSpawn: { x: 0, y: -FISH_SPAWN_DEPTH, z: 0 },
   fishermanSpawn: { x: DOCK.center.x, y: DOCK.height, z: DOCK.center.z },
 };

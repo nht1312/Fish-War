@@ -35,6 +35,9 @@ export interface FishState {
 export interface FishermanState {
   /** Where the fisherman's feet touch the dock. */
   readonly position: Vec3;
+  readonly velocity: Vec3;
+  /** Heading around the Y axis in radians; 0 faces +Z. */
+  readonly yaw: number;
 }
 
 /** What the fish player wants to do this tick. Intent only, never results. */
@@ -45,9 +48,16 @@ export interface FishInput {
   readonly dive: boolean;
 }
 
+/** What the fisherman player wants to do this tick. Intent only, never results. */
+export interface FishermanInput {
+  /** Desired walk direction on the dock; magnitude above 1 is normalised. */
+  readonly move: HorizontalVec;
+}
+
 /** Every player's intent for one tick. */
 export interface MatchInputs {
   readonly fish: FishInput;
+  readonly fisherman: FishermanInput;
 }
 
 /**

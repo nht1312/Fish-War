@@ -71,7 +71,7 @@ the simulation's shape is real.
 - [x] 2. Fixed-tick simulation drives the scene
 - [x] 3. Fish swims horizontally
 - [x] 4. Fish dives and surfaces
-- [ ] 5. Fisherman moves on the dock
+- [x] 5. Fisherman moves on the dock
 - **Checkpoint A** — both avatars controllable
 
 ### Phase 2 — Rod & line

@@ -20,8 +20,16 @@ export {
   DEFAULT_CONFIG,
   type DockConfig,
   type FishConfig,
+  type FishermanConfig,
   type MatchConfig,
   type PondConfig,
 } from "./config";
 export { createMatch, stepMatch } from "./match";
+export { stepFishermanMovement } from "./systems/fishermanMovement";
 export { isAtSurface, stepFishMovement } from "./systems/fishMovement";
+export {
+  integrateKinematic,
+  type Bounds2D,
+  type KinematicParams,
+  type PlanarBody,
+} from "./systems/kinematics";
