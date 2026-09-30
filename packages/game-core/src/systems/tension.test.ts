@@ -16,10 +16,15 @@ function fishOut(d: number): FishState {
     position: { x: 0, y: 0, z: TIP.z - horizontal },
     velocity: { x: 0, y: 0, z: 0 },
     yaw: Math.PI,
+    stamina: DEFAULT_CONFIG.fish.maxStamina,
   };
 }
 
-const swim = (x: number, z: number): FishInput => ({ move: { x, z }, dive: false });
+const swim = (x: number, z: number, sprint = false): FishInput => ({
+  move: { x, z },
+  dive: false,
+  sprint,
+});
 
 describe("linePull", () => {
   it("is zero while the line is slack", () => {
@@ -34,6 +39,11 @@ describe("linePull", () => {
   it("counts only the outward component of a diagonal pull", () => {
     const pull = linePull(fishOut(LENGTH), swim(1, -1), TIP, LENGTH, DEFAULT_CONFIG);
     expect(pull).toBeCloseTo(FISH.swimSpeed * Math.SQRT1_2);
+  });
+
+  it("is stronger while sprinting", () => {
+    const pull = linePull(fishOut(LENGTH), swim(0, -1, true), TIP, LENGTH, DEFAULT_CONFIG);
+    expect(pull).toBeCloseTo(FISH.swimSpeed * FISH.sprintMultiplier);
   });
 
   it("is zero when swimming toward the rod or not swimming", () => {

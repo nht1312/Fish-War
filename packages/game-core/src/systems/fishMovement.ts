@@ -3,6 +3,7 @@ import type { FishInput, FishState } from "@fishwar/game-types";
 import type { MatchConfig } from "../config";
 import { clamp } from "../math";
 import { integrateKinematic, type Bounds2D } from "./kinematics";
+import { effectiveSwimSpeed } from "./stamina";
 
 /** Whether the fish is close enough to y = 0 to count as surfaced. */
 export function isAtSurface(fish: FishState, config: MatchConfig): boolean {
@@ -21,8 +22,8 @@ function pondBounds(config: MatchConfig): Bounds2D {
 }
 
 /**
- * Swimming: horizontal movement inside the pond (shared kinematics), plus
- * diving or rising between the pond floor and the surface.
+ * Swimming: horizontal movement inside the pond (shared kinematics, faster
+ * while sprinting), plus diving or rising between the pond floor and the surface.
  */
 export function stepFishMovement(
   fish: FishState,
@@ -30,11 +31,11 @@ export function stepFishMovement(
   config: MatchConfig,
   dt: number,
 ): FishState {
-  const { swimSpeed, acceleration, deceleration } = config.fish;
+  const { acceleration, deceleration } = config.fish;
   const planar = integrateKinematic(
     { position: fish.position, velocity: fish.velocity, yaw: fish.yaw },
     input.move,
-    { maxSpeed: swimSpeed, acceleration, deceleration },
+    { maxSpeed: effectiveSwimSpeed(fish, input, config), acceleration, deceleration },
     pondBounds(config),
     dt,
   );

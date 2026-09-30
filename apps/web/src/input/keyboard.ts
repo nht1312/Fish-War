@@ -33,11 +33,15 @@ function axis(keyboard: Keyboard, negative: string, positive: string): number {
   return Number(keyboard.isDown(positive)) - Number(keyboard.isDown(negative));
 }
 
-/** Hot-seat Fish controls: WASD swims (W = away from the dock, toward -Z), hold C to dive. */
+/**
+ * Hot-seat Fish controls: WASD swims (W = away from the dock, toward -Z),
+ * hold C to dive, hold Left Shift to sprint.
+ */
 function readFishInput(keyboard: Keyboard): FishInput {
   return {
     move: { x: axis(keyboard, "KeyA", "KeyD"), z: axis(keyboard, "KeyW", "KeyS") },
     dive: keyboard.isDown("KeyC"),
+    sprint: keyboard.isDown("ShiftLeft"),
   };
 }
 

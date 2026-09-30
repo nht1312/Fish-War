@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 
+import { StaminaBar } from "../ui/StaminaBar";
 import { TensionBar } from "../ui/TensionBar";
 
 // WebGL needs the browser, so the canvas is never server-rendered.
@@ -12,6 +13,7 @@ export function GameCanvasLoader() {
     <div style={{ position: "fixed", inset: 0 }}>
       <GameCanvas />
       <TensionBar />
+      <StaminaBar />
     </div>
   );
 }

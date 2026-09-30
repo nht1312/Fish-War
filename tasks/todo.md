@@ -221,7 +221,7 @@ contribution.
 
 ## Phase 3 — Fish vs Fisherman actions
 
-### - [ ] Task 10: Fish stamina, sprint, and exhaustion
+### - [x] Task 10: Fish stamina, sprint, and exhaustion
 
 **Description:** `FishState.stamina` runs from 0 to `maxStamina`. Holding `Shift`
 sprints (a speed multiplier) and drains stamina. Pulling against the line drains it in

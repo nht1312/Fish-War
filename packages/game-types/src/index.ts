@@ -30,6 +30,8 @@ export interface FishState {
   readonly velocity: Vec3;
   /** Heading around the Y axis in radians; 0 faces +Z. */
   readonly yaw: number;
+  /** 0..maxStamina. Hooked at 0, the fish is exhausted. */
+  readonly stamina: number;
 }
 
 export interface FishermanState {
@@ -62,7 +64,7 @@ export type LineState =
     };
 
 /** Why a match ended. More reasons arrive with their systems. */
-export type OutcomeReason = "line-broken";
+export type OutcomeReason = "line-broken" | "fish-exhausted";
 
 export interface MatchOutcome {
   readonly winner: Role;
@@ -75,6 +77,8 @@ export interface FishInput {
   readonly move: HorizontalVec;
   /** Held to swim down; released, the fish rises back to the surface. */
   readonly dive: boolean;
+  /** Held to swim faster at the cost of stamina. */
+  readonly sprint: boolean;
 }
 
 /** What the fisherman player wants to do this tick. Intent only, never results. */

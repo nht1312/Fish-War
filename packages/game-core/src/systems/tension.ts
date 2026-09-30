@@ -1,6 +1,7 @@
 import type { FishInput, FishState, Vec3 } from "@fishwar/game-types";
 
 import type { MatchConfig } from "../config";
+import { effectiveSwimSpeed } from "./stamina";
 
 export interface TensionState {
   readonly tension: number;
@@ -33,7 +34,7 @@ export function linePull(
   if (distance < length - config.tension.tautTolerance || horizontal === 0) return 0;
 
   const inputLength = Math.hypot(input.move.x, input.move.z);
-  const scale = config.fish.swimSpeed / Math.max(inputLength, 1);
+  const scale = effectiveSwimSpeed(fish, input, config) / Math.max(inputLength, 1);
   const outward = (input.move.x * dx + input.move.z * dz) / horizontal;
   return Math.max(outward * scale, 0);
 }

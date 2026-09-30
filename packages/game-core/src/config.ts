@@ -29,6 +29,15 @@ export interface FishConfig {
   readonly surfaceSpeed: number;
   /** How far below y = 0 the fish still counts as at the surface (m). */
   readonly surfaceTolerance: number;
+  readonly maxStamina: number;
+  /** Swim speed multiplier while sprinting. */
+  readonly sprintMultiplier: number;
+  /** Stamina lost per second while sprinting. */
+  readonly sprintDrain: number;
+  /** Stamina lost per second per point of line tension. */
+  readonly tensionDrain: number;
+  /** Stamina regained per second while resting. */
+  readonly staminaRegen: number;
 }
 
 export interface FishermanConfig {
@@ -130,6 +139,11 @@ export const DEFAULT_CONFIG: MatchConfig = {
     diveSpeed: 3,
     surfaceSpeed: 2,
     surfaceTolerance: 0.1,
+    maxStamina: 100,
+    sprintMultiplier: 1.6,
+    sprintDrain: 20,
+    tensionDrain: 0.12,
+    staminaRegen: 12,
   },
   fisherman: { moveSpeed: 4, acceleration: 25, deceleration: 25, spawnYaw: Math.PI },
   rod: { tipHeight: 2.2, tipReach: 1.2, castDistance: 12 },

@@ -82,7 +82,7 @@ the simulation's shape is real.
 - **Checkpoint B** — the fight on the line is playable
 
 ### Phase 3 — Fish vs Fisherman actions
-- [ ] 10. Fish stamina, sprint, and exhaustion
+- [x] 10. Fish stamina, sprint, and exhaustion
 - [ ] 11. Fish dash
 - [ ] 12. Water gun and fisherman knockout
 - [ ] 13. Fisherman dodge
