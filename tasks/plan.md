@@ -118,7 +118,7 @@ re-planned in detail at Checkpoint D; Phase 6 stays coarse until Checkpoint E.
 - [x] 17. Server room: two seats, authoritative tick, snapshots
 - [x] 18. Client online mode: send own input, render server snapshots
 - [x] 19. Server hardening: input ordering, rate and size limits
-- [ ] 20. Snapshot interpolation
+- [x] 20. Snapshot interpolation
 - [ ] 20b. (Optional) Own-avatar prediction, only if Checkpoint E asks for it
 - **Checkpoint E** — two tabs play a full match through the server
 

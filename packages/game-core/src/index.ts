@@ -32,6 +32,7 @@ export {
   type TensionConfig,
   type WaterGunConfig,
 } from "./config";
+export { interpolateState } from "./interpolate";
 export { createMatch, stepMatch } from "./match";
 export { parseClientMessage, parseServerMessage } from "./protocol";
 export { applyTensionSpike, stepDash, type DashStep } from "./systems/dash";

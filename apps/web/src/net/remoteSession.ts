@@ -9,18 +9,30 @@ import type { ClientMessage, MatchInputs } from "@fishwar/game-types";
 import type { SimRunner } from "../sim/simRunner";
 import { browserConnect, type Connect } from "./connect";
 import { INITIAL_CONNECTION, reduceConnection, reduceConnectionClosed } from "./connection";
+import { addSnapshot, EMPTY_BUFFER, sampleBuffer } from "./snapshotBuffer";
+
+/** Render this many ticks behind the server, so there is a snapshot on each side to blend. */
+const INTERPOLATION_DELAY_TICKS = 2;
+const MS_PER_SECOND = 1000;
+
+const browserNow = () => performance.now() / MS_PER_SECOND;
 
 /**
  * An online game session. The server is authoritative: this only sends our
- * own role's intent (at most once per sim tick) and shows the latest snapshot.
+ * own role's intent (at most once per sim tick) and shows the server's state,
+ * smoothed by rendering slightly in the past between the last two snapshots.
+ * `now` (seconds) is injectable for tests.
  */
 export function createRemoteSession(
   config: MatchConfig,
   url: string,
   connect: Connect = browserConnect,
+  now: () => number = browserNow,
 ): SimRunner {
   const tickDt = 1 / config.tickRate;
-  let state = createMatch(config);
+  const renderDelay = INTERPOLATION_DELAY_TICKS * tickDt;
+  const beforeFirstSnapshot = createMatch(config);
+  let buffer = EMPTY_BUFFER;
   let connection = INITIAL_CONNECTION;
   let accumulator = 0;
   let seq = 0;
@@ -30,7 +42,7 @@ export function createRemoteSession(
       const message = parseServerMessage(data);
       if (!message) return;
       connection = reduceConnection(connection, message);
-      if (message.type === "snapshot") state = message.state;
+      if (message.type === "snapshot") buffer = addSnapshot(buffer, message.state, now());
     },
     onClose() {
       connection = reduceConnectionClosed(connection);
@@ -41,7 +53,7 @@ export function createRemoteSession(
 
   return {
     config,
-    getState: () => state,
+    getState: () => sampleBuffer(buffer, now(), renderDelay) ?? beforeFirstSnapshot,
     getConnection: () => connection,
     advance(frameDt, inputs: MatchInputs) {
       const clock = advanceClock(accumulator, frameDt, tickDt, config.maxTicksPerFrame);

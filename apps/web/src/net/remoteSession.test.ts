@@ -32,8 +32,9 @@ function fakeServer() {
 
 function session() {
   const server = fakeServer();
-  const remote = createRemoteSession(DEFAULT_CONFIG, "ws://test", server.connect);
-  return { server, remote };
+  const clock = { now: 0 };
+  const remote = createRemoteSession(DEFAULT_CONFIG, "ws://test", server.connect, () => clock.now);
+  return { server, remote, clock };
 }
 
 describe("createRemoteSession", () => {
@@ -69,6 +70,24 @@ describe("createRemoteSession", () => {
     const state: MatchState = { ...createMatch(DEFAULT_CONFIG), tick: 99, phase: "playing" };
     server.push({ type: "snapshot", state, ackSeq: 0 });
     expect(remote.getState()).toEqual(state);
+  });
+
+  it("renders between snapshots, a little behind the server", () => {
+    const { server, remote, clock } = session();
+    const base = createMatch(DEFAULT_CONFIG);
+    for (let tick = 1; tick <= 5; tick++) {
+      clock.now = tick * TICK;
+      const state: MatchState = {
+        ...base,
+        tick,
+        time: tick * TICK,
+        fish: { ...base.fish, position: { x: tick, y: 0, z: 0 } },
+      };
+      server.push({ type: "snapshot", state, ackSeq: 0 });
+    }
+    clock.now = 5 * TICK + TICK / 2;
+    // Two ticks behind the newest, half-way between ticks 3 and 4.
+    expect(remote.getState().fish.position.x).toBeCloseTo(3.5);
   });
 
   it("asks the server for a rematch on restart", () => {

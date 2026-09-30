@@ -462,7 +462,7 @@ Cooldowns, stamina, tension and outcomes are already computed only in `stepMatch
 **Files likely touched:** `apps/game-server/src/room.ts` + test, `apps/game-server/src/limits.ts` + test, `apps/game-server/src/index.ts`
 **Scope:** S–M
 
-### - [ ] Task 20: Snapshot interpolation
+### - [x] Task 20: Snapshot interpolation
 
 **Description:** Online, the client renders every entity slightly in the past,
 blending between the last two snapshots so movement stays smooth between 30 Hz
