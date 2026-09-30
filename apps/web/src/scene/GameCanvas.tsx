@@ -1,10 +1,10 @@
 "use client";
 
-import { DEFAULT_CONFIG } from "@fishwar/game-core";
 import { Canvas } from "@react-three/fiber";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-import { createSimRunner } from "../sim/simRunner";
+import { createSession } from "../sim/createSession";
+import type { SimRunner } from "../sim/simRunner";
 import { Dock } from "./Dock";
 import { EscapeZone } from "./EscapeZone";
 import { FishermanMesh } from "./FishermanMesh";
@@ -17,9 +17,21 @@ import { Rod } from "./Rod";
 import { CAMERA, LIGHTING } from "./sceneConfig";
 import { SimLoop } from "./SimLoop";
 
-/** The WebGL scene. Rendering only — gameplay runs in the sim runner. */
+/**
+ * The WebGL scene. Rendering only: gameplay runs in the session (offline sim or
+ * the online server). The session is created in an effect, not a state
+ * initializer, so React dev double-invocation cannot open two connections.
+ */
 export default function GameCanvas() {
-  const [runner] = useState(() => createSimRunner(DEFAULT_CONFIG));
+  const [runner, setRunner] = useState<SimRunner | null>(null);
+
+  useEffect(() => {
+    const session = createSession();
+    setRunner(session);
+    return () => session.dispose();
+  }, []);
+
+  if (!runner) return null;
 
   return (
     <Canvas camera={{ position: CAMERA.position, fov: CAMERA.fov }}>

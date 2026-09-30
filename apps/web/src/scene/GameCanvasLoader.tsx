@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 
 import { BalanceBar } from "../ui/BalanceBar";
+import { ConnectionStatus } from "../ui/ConnectionStatus";
 import { MatchTimer } from "../ui/MatchTimer";
 import { ResultOverlay } from "../ui/ResultOverlay";
 import { StaminaBar } from "../ui/StaminaBar";
@@ -20,6 +21,7 @@ export function GameCanvasLoader() {
       <BalanceBar />
       <MatchTimer />
       <ResultOverlay />
+      <ConnectionStatus />
     </div>
   );
 }

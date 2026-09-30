@@ -38,7 +38,7 @@ export function SimLoop({ runner }: { runner: SimRunner }) {
     sinceHudPublish.current += delta;
     if (sinceHudPublish.current >= HUD_PUBLISH_INTERVAL_SECONDS) {
       sinceHudPublish.current = 0;
-      useHudStore.setState(selectHud(runner.getState(), runner.config));
+      useHudStore.setState(selectHud(runner.getState(), runner.config, runner.getConnection()));
     }
   });
 

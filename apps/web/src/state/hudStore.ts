@@ -2,6 +2,8 @@ import type { MatchConfig } from "@fishwar/game-core";
 import type { MatchOutcome, MatchPhase, MatchState } from "@fishwar/game-types";
 import { create } from "zustand";
 
+import type { ConnectionStatus } from "../net/connection";
+
 /** Read-only HUD values mirrored from the sim. Never read back into gameplay. */
 export interface HudState {
   readonly lineHooked: boolean;
@@ -19,6 +21,8 @@ export interface HudState {
   /** Seconds of play left. */
   readonly timeLeft: number;
   readonly outcome: MatchOutcome | null;
+  /** Online connection status; null offline. */
+  readonly connection: ConnectionStatus | null;
 }
 
 export const useHudStore = create<HudState>(() => ({
@@ -31,10 +35,15 @@ export const useHudStore = create<HudState>(() => ({
   countdown: 0,
   timeLeft: 0,
   outcome: null,
+  connection: null,
 }));
 
-/** Derive the HUD values from the current sim state. */
-export function selectHud(state: MatchState, config: MatchConfig): HudState {
+/** Derive the HUD values from the current sim state and connection. */
+export function selectHud(
+  state: MatchState,
+  config: MatchConfig,
+  connection: ConnectionStatus | null,
+): HudState {
   const { breakStrength } = config.tension;
   const { line } = state;
   return {
@@ -47,5 +56,6 @@ export function selectHud(state: MatchState, config: MatchConfig): HudState {
     countdown: state.countdown,
     timeLeft: state.timeLeft,
     outcome: state.outcome,
+    connection,
   };
 }

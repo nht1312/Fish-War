@@ -418,7 +418,7 @@ game-core uses.
 **Files likely touched:** `apps/game-server/src/room.ts` + test, `apps/game-server/src/index.ts`, `apps/game-server/package.json`
 **Scope:** M
 
-### - [ ] Task 18: Client online mode
+### - [x] Task 18: Client online mode
 
 **Description:** A `GameSession` interface (`config`, `getState`, `advance`, `restart`)
 is implemented by the existing local `SimRunner` and by a new `RemoteSession`
