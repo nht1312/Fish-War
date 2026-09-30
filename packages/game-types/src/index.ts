@@ -56,6 +56,10 @@ export interface FishermanState {
   readonly dodgeCooldown: number;
   /** Seconds left of the current dodge's invulnerability; 0 when not dodging. */
   readonly dodgeTime: number;
+  /** Seconds until the net can be swung again; 0 when ready. */
+  readonly netCooldown: number;
+  /** Seconds left of the current net swing (for display); 0 when not swinging. */
+  readonly netSwingTime: number;
 }
 
 /** A water gun shot in flight. */
@@ -84,7 +88,11 @@ export type LineState =
     };
 
 /** Why a match ended. More reasons arrive with their systems. */
-export type OutcomeReason = "line-broken" | "fish-exhausted" | "fisherman-knocked-out";
+export type OutcomeReason =
+  | "line-broken"
+  | "fish-exhausted"
+  | "fisherman-knocked-out"
+  | "captured";
 
 export interface MatchOutcome {
   readonly winner: Role;
@@ -115,6 +123,8 @@ export interface FishermanInput {
   readonly dragChange: number;
   /** Dodge button; dodges whenever the dodge is ready. */
   readonly dodge: boolean;
+  /** Net button; swings whenever the net is ready. */
+  readonly net: boolean;
 }
 
 /** Every player's intent for one tick. */

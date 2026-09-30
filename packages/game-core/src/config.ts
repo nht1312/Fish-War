@@ -129,6 +129,17 @@ export interface WaterGunConfig {
   readonly staggerSeconds: number;
 }
 
+export interface NetConfig {
+  /** Horizontal reach from the fisherman's feet (m). */
+  readonly range: number;
+  /** Deepest the fish can be and still be netted (m below the surface). */
+  readonly maxDepth: number;
+  /** Seconds between swings. */
+  readonly cooldown: number;
+  /** Length of the swing, for display (s). */
+  readonly swingSeconds: number;
+}
+
 /** Every gameplay tuning value. Passed in, never hard-coded in systems. */
 export interface MatchConfig {
   /** Simulation ticks per second. */
@@ -144,6 +155,7 @@ export interface MatchConfig {
   readonly tension: TensionConfig;
   readonly reel: ReelConfig;
   readonly waterGun: WaterGunConfig;
+  readonly net: NetConfig;
   readonly fishSpawn: Vec3;
   readonly fishermanSpawn: Vec3;
 }
@@ -226,6 +238,7 @@ export const DEFAULT_CONFIG: MatchConfig = {
     balanceRegen: 5,
     staggerSeconds: 0.6,
   },
+  net: { range: 3.5, maxDepth: 0.8, cooldown: 2, swingSeconds: 0.4 },
   fishSpawn: { x: 0, y: -FISH_SPAWN_DEPTH, z: 0 },
   fishermanSpawn: { x: DOCK.center.x, y: DOCK.height, z: DOCK.center.z },
 };

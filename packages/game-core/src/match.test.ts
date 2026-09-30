@@ -42,7 +42,7 @@ describe("createMatch", () => {
 const STILL = { x: 0, z: 0 };
 const IDLE: MatchInputs = {
   fish: { move: STILL, dive: false, sprint: false, dash: false, shoot: false },
-  fisherman: { move: STILL, cast: false, dragChange: 0, dodge: false },
+  fisherman: { move: STILL, cast: false, dragChange: 0, dodge: false, net: false },
 };
 
 describe("stepMatch", () => {
@@ -61,7 +61,7 @@ describe("stepMatch", () => {
     const start = createMatch(DEFAULT_CONFIG);
     const inputs: MatchInputs = {
       fish: { move: { x: 1, z: 0 }, dive: false, sprint: false, dash: false, shoot: false },
-      fisherman: { move: { x: -1, z: 0 }, cast: false, dragChange: 0, dodge: false },
+      fisherman: { move: { x: -1, z: 0 }, cast: false, dragChange: 0, dodge: false, net: false },
     };
     const next = stepMatch(start, inputs, DEFAULT_CONFIG, dt);
     expect(next.fish.position.x).toBeGreaterThan(start.fish.position.x);
@@ -71,7 +71,7 @@ describe("stepMatch", () => {
 
 describe("stepMatch casting", () => {
   const dt = 1 / DEFAULT_CONFIG.tickRate;
-  const pressCast: MatchInputs = { ...IDLE, fisherman: { move: STILL, cast: true, dragChange: 0, dodge: false } };
+  const pressCast: MatchInputs = { ...IDLE, fisherman: { move: STILL, cast: true, dragChange: 0, dodge: false, net: false } };
 
   it("starts with the line idle", () => {
     expect(createMatch(DEFAULT_CONFIG).line).toEqual({ phase: "idle" });
@@ -299,6 +299,27 @@ describe("stepMatch water gun", () => {
     const reel: MatchInputs = { ...IDLE, fisherman: { ...IDLE.fisherman, cast: true } };
     const next = stepMatch(hooked, reel, DEFAULT_CONFIG, dt);
     expect(next.line.phase === "hooked" && next.line.length).toBe(HOOKED_12.length);
+  });
+});
+
+describe("stepMatch net", () => {
+  const dt = 1 / DEFAULT_CONFIG.tickRate;
+
+  it("netting a fish near the dock wins the match for the fisherman", () => {
+    const start = createMatch(DEFAULT_CONFIG);
+    const { position } = start.fisherman;
+    const closeFish = { ...start.fish, position: { x: position.x, y: 0, z: position.z - 2 } };
+    const netting: MatchInputs = { ...IDLE, fisherman: { ...IDLE.fisherman, net: true } };
+    const next = stepMatch({ ...start, fish: closeFish }, netting, DEFAULT_CONFIG, dt);
+    expect(next.outcome).toEqual({ winner: "fisherman", reason: "captured" });
+  });
+
+  it("a whiff leaves the match undecided", () => {
+    const start = createMatch(DEFAULT_CONFIG);
+    const netting: MatchInputs = { ...IDLE, fisherman: { ...IDLE.fisherman, net: true } };
+    const next = stepMatch(start, netting, DEFAULT_CONFIG, dt);
+    expect(next.outcome).toBeNull();
+    expect(next.fisherman.netCooldown).toBe(DEFAULT_CONFIG.net.cooldown);
   });
 });
 

@@ -7,6 +7,7 @@ import { applyTensionSpike, stepDash } from "./systems/dash";
 import { stepDodge } from "./systems/dodge";
 import { stepHookedFight } from "./systems/fight";
 import { rodTipPosition, stepLine } from "./systems/line";
+import { stepNet } from "./systems/net";
 import { stepDrag } from "./systems/reel";
 import { isSprinting, stepStamina } from "./systems/stamina";
 import { stepWaterGun } from "./systems/waterGun";
@@ -36,6 +37,8 @@ export function createMatch(config: MatchConfig): MatchState {
       staggerTime: 0,
       dodgeCooldown: 0,
       dodgeTime: 0,
+      netCooldown: 0,
+      netSwingTime: 0,
     },
     line: { phase: "idle" },
     projectiles: [],
@@ -45,6 +48,7 @@ export function createMatch(config: MatchConfig): MatchState {
 
 const FISH_EXHAUSTED: MatchOutcome = { winner: "fisherman", reason: "fish-exhausted" };
 const FISHERMAN_KNOCKED_OUT: MatchOutcome = { winner: "fish", reason: "fisherman-knocked-out" };
+const CAPTURED: MatchOutcome = { winner: "fisherman", reason: "captured" };
 
 /**
  * Advance the match by one fixed tick of `dt` seconds. Pure: returns a new
@@ -102,6 +106,8 @@ export function stepMatch(
   );
   const exhausted = line.phase === "hooked" && stamina === 0 ? FISH_EXHAUSTED : null;
   const knockedOut = water.knockedOut ? FISHERMAN_KNOCKED_OUT : null;
+  const net = stepNet(fisherman, fight.fish, inputs.fisherman, config, dt);
+  const captured = net.captured ? CAPTURED : null;
 
   return {
     ...state,
@@ -110,7 +116,7 @@ export function stepMatch(
     fish: { ...fight.fish, stamina },
     line,
     projectiles: water.projectiles,
-    fisherman: { ...fisherman, castHeld: inputs.fisherman.cast },
-    outcome: state.outcome ?? fight.outcome ?? exhausted ?? knockedOut,
+    fisherman: { ...net.fisherman, castHeld: inputs.fisherman.cast },
+    outcome: state.outcome ?? fight.outcome ?? exhausted ?? knockedOut ?? captured,
   };
 }

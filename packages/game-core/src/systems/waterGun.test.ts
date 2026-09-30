@@ -23,6 +23,8 @@ const fisherman: FishermanState = {
   staggerTime: 0,
   dodgeCooldown: 0,
   dodgeTime: 0,
+  netCooldown: 0,
+  netSwingTime: 0,
 };
 const target = fishermanTarget(fisherman, DEFAULT_CONFIG);
 

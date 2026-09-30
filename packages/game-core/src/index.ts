@@ -23,6 +23,7 @@ export {
   type FishermanConfig,
   type LineConfig,
   type MatchConfig,
+  type NetConfig,
   type PondConfig,
   type ReelConfig,
   type RodConfig,
@@ -36,6 +37,7 @@ export { stepHookedFight, type FightStep } from "./systems/fight";
 export { stepFishermanMovement } from "./systems/fishermanMovement";
 export { isAtSurface, stepFishMovement } from "./systems/fishMovement";
 export { castLandingPoint, constrainToLine, rodTipPosition, stepLine } from "./systems/line";
+export { stepNet, type NetStep } from "./systems/net";
 export { payOutLine, reelInLine, stepDrag } from "./systems/reel";
 export {
   effectiveSwimSpeed,

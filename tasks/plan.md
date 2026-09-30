@@ -89,7 +89,7 @@ the simulation's shape is real.
 - **Checkpoint C** — every §3 ability works
 
 ### Phase 4 — Capture & match
-- [ ] 14. Fishing net captures the fish
+- [x] 14. Fishing net captures the fish
 - [ ] 15. Match state: countdown, timer, escape zone, outcome, restart
 - **Checkpoint D** — full offline match, start to finish. **Re-plan Phases 5–6 here.**
 

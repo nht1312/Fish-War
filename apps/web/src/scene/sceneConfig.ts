@@ -60,3 +60,11 @@ export const SHOT_STYLE = {
   /** Most shots drawn at once; the gun's cooldown keeps far fewer in the air. */
   maxVisible: 8,
 } as const;
+
+export const NET_STYLE = {
+  color: "#ffffff",
+  /** Thickness of the reach ring drawn on the water (m). */
+  tube: 0.06,
+  /** Just above the water so the ring is not hidden by it (m). */
+  heightAboveWater: 0.05,
+} as const;

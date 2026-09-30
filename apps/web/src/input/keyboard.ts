@@ -50,7 +50,7 @@ function readFishInput(keyboard: Keyboard): FishInput {
 /**
  * Hot-seat Fisherman controls: arrow keys walk (Up = toward the pond, -Z),
  * Enter casts / retrieves (hold while hooked to reel), [ and ] loosen / tighten drag,
- * . (period) dodges.
+ * . (period) dodges, / swings the net.
  */
 function readFishermanInput(keyboard: Keyboard): FishermanInput {
   return {
@@ -61,6 +61,7 @@ function readFishermanInput(keyboard: Keyboard): FishermanInput {
     cast: keyboard.isDown("Enter"),
     dragChange: axis(keyboard, "BracketLeft", "BracketRight"),
     dodge: keyboard.isDown("Period"),
+    net: keyboard.isDown("Slash"),
   };
 }
 

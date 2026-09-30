@@ -18,6 +18,8 @@ const ready: FishermanState = {
   staggerTime: 0,
   dodgeCooldown: 0,
   dodgeTime: 0,
+  netCooldown: 0,
+  netSwingTime: 0,
 };
 
 const dodge = (on: boolean, x = 0, z = 0): FishermanInput => ({
@@ -25,6 +27,7 @@ const dodge = (on: boolean, x = 0, z = 0): FishermanInput => ({
   cast: false,
   dragChange: 0,
   dodge: on,
+  net: false,
 });
 
 describe("stepDodge", () => {

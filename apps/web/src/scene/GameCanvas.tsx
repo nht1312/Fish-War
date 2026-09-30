@@ -9,6 +9,7 @@ import { Dock } from "./Dock";
 import { FishermanMesh } from "./FishermanMesh";
 import { FishingLine } from "./FishingLine";
 import { FishMesh } from "./FishMesh";
+import { Net } from "./Net";
 import { Pond } from "./Pond";
 import { Projectiles } from "./Projectiles";
 import { Rod } from "./Rod";
@@ -32,6 +33,7 @@ export default function GameCanvas() {
       <Rod runner={runner} />
       <FishingLine runner={runner} />
       <Projectiles runner={runner} />
+      <Net runner={runner} />
     </Canvas>
   );
 }

@@ -312,7 +312,7 @@ and a cooldown.
 
 ## Phase 4 — Capture & match
 
-### - [ ] Task 14: Fishing net captures the fish
+### - [x] Task 14: Fishing net captures the fish
 
 **Description:** `/` swings the net, with a cooldown. It succeeds if the fish is
 within `netRange` of the fisherman **and** is at or near the surface (`y >=
