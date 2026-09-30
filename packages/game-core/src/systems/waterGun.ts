@@ -7,6 +7,7 @@ import type {
 } from "@fishwar/game-types";
 
 import type { MatchConfig } from "../config";
+import { isInvulnerable } from "./dodge";
 import { isAtSurface } from "./fishMovement";
 
 /** The point shots aim at and hit: the fisherman's torso. */
@@ -68,11 +69,13 @@ function distance(a: Vec3, b: Vec3): number {
 
 /**
  * Move shots under gravity. A shot within hitRadius of the target hits and is
- * removed; shots falling back into the water or older than maxShotAge expire.
+ * removed, unless the target is invulnerable (dodging), in which case it flies
+ * on through. Shots falling back into the water or older than maxShotAge expire.
  */
 export function stepProjectiles(
   projectiles: readonly Projectile[],
   target: Vec3,
+  invulnerable: boolean,
   config: MatchConfig,
   dt: number,
 ): ProjectileStep {
@@ -89,7 +92,7 @@ export function stepProjectiles(
     };
     const age = shot.age + dt;
 
-    if (distance(position, target) <= hitRadius) {
+    if (!invulnerable && distance(position, target) <= hitRadius) {
       hits += 1;
     } else if (!(position.y < 0 && velocity.y < 0) && age <= maxShotAge) {
       flying.push({ position, velocity, age });
@@ -140,7 +143,7 @@ export function stepWaterGun(
   dt: number,
 ): WaterGunStep {
   const target = fishermanTarget(fisherman, config);
-  const flown = stepProjectiles(projectiles, target, config, dt);
+  const flown = stepProjectiles(projectiles, target, isInvulnerable(fisherman), config, dt);
   const fired = fireWaterGun(fish, input, target, config, dt);
   const struck = stepBalance(fisherman, flown.hits, config, dt);
 

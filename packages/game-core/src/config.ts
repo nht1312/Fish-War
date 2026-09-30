@@ -55,6 +55,12 @@ export interface FishermanConfig {
   readonly deceleration: number;
   /** Heading at spawn in radians; PI faces -Z, out over the pond. */
   readonly spawnYaw: number;
+  /** Speed of the dodge burst (m/s). */
+  readonly dodgeSpeed: number;
+  /** Seconds of invulnerability to shots after a dodge starts. */
+  readonly dodgeIFrameSeconds: number;
+  /** Seconds between dodges. */
+  readonly dodgeCooldown: number;
 }
 
 export interface RodConfig {
@@ -180,7 +186,15 @@ export const DEFAULT_CONFIG: MatchConfig = {
     dashCooldown: 1.5,
     dashTensionSpike: 25,
   },
-  fisherman: { moveSpeed: 4, acceleration: 25, deceleration: 25, spawnYaw: Math.PI },
+  fisherman: {
+    moveSpeed: 4,
+    acceleration: 25,
+    deceleration: 25,
+    spawnYaw: Math.PI,
+    dodgeSpeed: 12,
+    dodgeIFrameSeconds: 0.35,
+    dodgeCooldown: 1.2,
+  },
   rod: { tipHeight: 2.2, tipReach: 1.2, castDistance: 12 },
   line: { hookRadius: 1 },
   tension: {

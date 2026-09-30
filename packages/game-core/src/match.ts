@@ -4,6 +4,7 @@ import type { MatchConfig } from "./config";
 import { stepFishermanMovement } from "./systems/fishermanMovement";
 import { stepFishMovement } from "./systems/fishMovement";
 import { applyTensionSpike, stepDash } from "./systems/dash";
+import { stepDodge } from "./systems/dodge";
 import { stepHookedFight } from "./systems/fight";
 import { rodTipPosition, stepLine } from "./systems/line";
 import { stepDrag } from "./systems/reel";
@@ -33,6 +34,8 @@ export function createMatch(config: MatchConfig): MatchState {
       drag: config.reel.initialDrag,
       balance: config.waterGun.maxBalance,
       staggerTime: 0,
+      dodgeCooldown: 0,
+      dodgeTime: 0,
     },
     line: { phase: "idle" },
     projectiles: [],
@@ -53,7 +56,12 @@ export function stepMatch(
   config: MatchConfig,
   dt: number,
 ): MatchState {
-  const walked = stepFishermanMovement(state.fisherman, inputs.fisherman, config, dt);
+  const walked = stepDodge(
+    stepFishermanMovement(state.fisherman, inputs.fisherman, config, dt),
+    inputs.fisherman,
+    config,
+    dt,
+  );
   const dash = stepDash(
     stepFishMovement(state.fish, inputs.fish, config, dt),
     inputs.fish,

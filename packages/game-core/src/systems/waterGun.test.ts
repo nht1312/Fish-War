@@ -21,6 +21,8 @@ const fisherman: FishermanState = {
   drag: DEFAULT_CONFIG.reel.initialDrag,
   balance: GUN.maxBalance,
   staggerTime: 0,
+  dodgeCooldown: 0,
+  dodgeTime: 0,
 };
 const target = fishermanTarget(fisherman, DEFAULT_CONFIG);
 
@@ -61,7 +63,7 @@ describe("fireWaterGun", () => {
     let shots: readonly Projectile[] = [projectile];
     let hits = 0;
     for (let i = 0; i < 120 && shots.length > 0; i++) {
-      const step = stepProjectiles(shots, target, DEFAULT_CONFIG, DT);
+      const step = stepProjectiles(shots, target, false, DEFAULT_CONFIG, DT);
       shots = step.projectiles;
       hits += step.hits;
     }
@@ -93,6 +95,7 @@ describe("stepProjectiles", () => {
     const { projectiles } = stepProjectiles(
       [shot({ x: 0, y: 1, z: 0 }, { x: 2, y: 5, z: 0 })],
       far,
+      false,
       DEFAULT_CONFIG,
       DT,
     );
@@ -103,15 +106,21 @@ describe("stepProjectiles", () => {
   });
 
   it("removes a shot that hits the target and counts the hit", () => {
-    const result = stepProjectiles([shot(target, { x: 0, y: 0, z: 0 })], target, DEFAULT_CONFIG, DT);
+    const result = stepProjectiles([shot(target, { x: 0, y: 0, z: 0 })], target, false, DEFAULT_CONFIG, DT);
     expect(result.hits).toBe(1);
     expect(result.projectiles).toHaveLength(0);
+  });
+
+  it("lets shots pass through an invulnerable (dodging) target", () => {
+    const result = stepProjectiles([shot(target, { x: 0, y: 0, z: 0 })], target, true, DEFAULT_CONFIG, DT);
+    expect(result.hits).toBe(0);
+    expect(result.projectiles).toHaveLength(1);
   });
 
   it("removes shots that fall back into the water or get too old", () => {
     const falling = shot({ x: 0, y: 0.01, z: 0 }, { x: 0, y: -5, z: 0 });
     const old = shot({ x: 0, y: 5, z: 0 }, { x: 0, y: 0, z: 0 }, GUN.maxShotAge);
-    const result = stepProjectiles([falling, old], far, DEFAULT_CONFIG, DT);
+    const result = stepProjectiles([falling, old], far, false, DEFAULT_CONFIG, DT);
     expect(result.projectiles).toHaveLength(0);
     expect(result.hits).toBe(0);
   });

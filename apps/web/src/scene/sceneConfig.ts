@@ -24,6 +24,8 @@ export const FISHERMAN_STYLE = {
   radius: 0.4,
   bodyHeight: 1.0,
   color: "#3a6b35",
+  /** Shown while a dodge makes him invulnerable. */
+  dodgeColor: "#b8f2b0",
 } as const;
 
 export const CAMERA = {

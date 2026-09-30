@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import { DEFAULT_CONFIG, type MatchConfig } from "./config";
 import { createMatch, stepMatch } from "./match";
 import { rodTipPosition } from "./systems/line";
+import { fishermanTarget } from "./systems/waterGun";
 
 describe("createMatch", () => {
   const state = createMatch(DEFAULT_CONFIG);
@@ -41,7 +42,7 @@ describe("createMatch", () => {
 const STILL = { x: 0, z: 0 };
 const IDLE: MatchInputs = {
   fish: { move: STILL, dive: false, sprint: false, dash: false, shoot: false },
-  fisherman: { move: STILL, cast: false, dragChange: 0 },
+  fisherman: { move: STILL, cast: false, dragChange: 0, dodge: false },
 };
 
 describe("stepMatch", () => {
@@ -60,7 +61,7 @@ describe("stepMatch", () => {
     const start = createMatch(DEFAULT_CONFIG);
     const inputs: MatchInputs = {
       fish: { move: { x: 1, z: 0 }, dive: false, sprint: false, dash: false, shoot: false },
-      fisherman: { move: { x: -1, z: 0 }, cast: false, dragChange: 0 },
+      fisherman: { move: { x: -1, z: 0 }, cast: false, dragChange: 0, dodge: false },
     };
     const next = stepMatch(start, inputs, DEFAULT_CONFIG, dt);
     expect(next.fish.position.x).toBeGreaterThan(start.fish.position.x);
@@ -70,7 +71,7 @@ describe("stepMatch", () => {
 
 describe("stepMatch casting", () => {
   const dt = 1 / DEFAULT_CONFIG.tickRate;
-  const pressCast: MatchInputs = { ...IDLE, fisherman: { move: STILL, cast: true, dragChange: 0 } };
+  const pressCast: MatchInputs = { ...IDLE, fisherman: { move: STILL, cast: true, dragChange: 0, dodge: false } };
 
   it("starts with the line idle", () => {
     expect(createMatch(DEFAULT_CONFIG).line).toEqual({ phase: "idle" });
@@ -260,6 +261,32 @@ describe("stepMatch water gun", () => {
     }
     expect(state.fisherman.balance).toBe(0);
     expect(state.outcome).toEqual({ winner: "fish", reason: "fisherman-knocked-out" });
+  });
+
+  it("a dodging fisherman is not hit by a shot passing through him", () => {
+    const start = createMatch(DEFAULT_CONFIG);
+    const target = fishermanTarget(start.fisherman, DEFAULT_CONFIG);
+    const shot = { position: target, velocity: { x: 0, y: 0, z: 0 }, age: 0 };
+    const dodging: MatchState = {
+      ...start,
+      projectiles: [shot],
+      fisherman: { ...start.fisherman, dodgeTime: 0.2, dodgeCooldown: 1 },
+    };
+    const next = stepMatch(dodging, IDLE, DEFAULT_CONFIG, dt);
+    expect(next.fisherman.balance).toBe(DEFAULT_CONFIG.waterGun.maxBalance);
+  });
+
+  it("a dodge never carries the fisherman off the dock", () => {
+    const start = createMatch(DEFAULT_CONFIG);
+    const { dock } = DEFAULT_CONFIG;
+    const atEdge: MatchState = {
+      ...start,
+      fisherman: { ...start.fisherman, position: { ...start.fisherman.position, x: dock.width / 2 - 0.1 } },
+    };
+    const dodgeRight: MatchInputs = { ...IDLE, fisherman: { ...IDLE.fisherman, dodge: true } };
+    let state = atEdge;
+    for (let i = 0; i < 30; i++) state = stepMatch(state, dodgeRight, DEFAULT_CONFIG, dt);
+    expect(state.fisherman.position.x).toBeLessThanOrEqual(dock.center.x + dock.width / 2);
   });
 
   it("a staggered fisherman cannot reel", () => {

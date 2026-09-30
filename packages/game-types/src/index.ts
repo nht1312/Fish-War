@@ -52,6 +52,10 @@ export interface FishermanState {
   readonly balance: number;
   /** Seconds left of the stagger from the last hit; no reeling while > 0. */
   readonly staggerTime: number;
+  /** Seconds until the fisherman can dodge again; 0 when ready. */
+  readonly dodgeCooldown: number;
+  /** Seconds left of the current dodge's invulnerability; 0 when not dodging. */
+  readonly dodgeTime: number;
 }
 
 /** A water gun shot in flight. */
@@ -109,6 +113,8 @@ export interface FishermanInput {
   readonly cast: boolean;
   /** Drag adjustment direction, -1 (looser) to 1 (tighter). */
   readonly dragChange: number;
+  /** Dodge button; dodges whenever the dodge is ready. */
+  readonly dodge: boolean;
 }
 
 /** Every player's intent for one tick. */

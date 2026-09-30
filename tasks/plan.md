@@ -85,7 +85,7 @@ the simulation's shape is real.
 - [x] 10. Fish stamina, sprint, and exhaustion
 - [x] 11. Fish dash
 - [x] 12. Water gun and fisherman knockout
-- [ ] 13. Fisherman dodge
+- [x] 13. Fisherman dodge
 - **Checkpoint C** — every §3 ability works
 
 ### Phase 4 — Capture & match

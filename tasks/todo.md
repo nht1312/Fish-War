@@ -284,7 +284,7 @@ slowly. At 0, the fisherman is knocked out: `outcome = { winner: "fish", reason:
 **Files likely touched:** `packages/game-core/src/systems/waterGun.ts` + test, `packages/game-types/src/index.ts`, `packages/game-core/src/{config,match}.ts`, `apps/web/src/scene/Projectiles.tsx`, `apps/web/src/ui/BalanceBar.tsx`
 **Scope:** M–L (split the render/HUD part off if it grows)
 
-### - [ ] Task 13: Fisherman dodge
+### - [x] Task 13: Fisherman dodge
 
 **Description:** `.` performs a short sidestep dash in the move direction, or sideways
 by default, with invulnerability frames against projectiles for `dodgeIFrameSeconds`
