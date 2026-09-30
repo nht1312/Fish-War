@@ -14,6 +14,7 @@ function fishermanAt(x: number, z: number, yaw: number): FishermanState {
     velocity: { x: 0, y: 0, z: 0 },
     yaw,
     castHeld: false,
+    drag: DEFAULT_CONFIG.reel.initialDrag,
   };
 }
 
@@ -26,7 +27,7 @@ function fishAt(x: number, y: number, z: number, vx = 0, vz = 0): FishState {
 
 /** A fish nowhere near any hook. */
 const FAR_FISH = fishAt(-15, -5, -12);
-const press = (cast: boolean): FishermanInput => ({ move: { x: 0, z: 0 }, cast });
+const press = (cast: boolean): FishermanInput => ({ move: { x: 0, z: 0 }, cast, dragChange: 0 });
 
 describe("rodTipPosition", () => {
   it("sits tipHeight above the feet and tipReach in front", () => {

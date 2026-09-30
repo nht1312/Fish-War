@@ -190,7 +190,7 @@ HUD and show a tension bar.
 **Files likely touched:** `packages/game-core/src/systems/tension.ts` + test, `packages/game-types/src/index.ts` (`MatchOutcome`), `apps/web/package.json`, `apps/web/src/state/hudStore.ts`, `apps/web/src/ui/TensionBar.tsx`
 **Scope:** M
 
-### - [ ] Task 9: Reel and drag
+### - [x] Task 9: Reel and drag
 
 **Description:** Holding `Enter` while hooked reels: it shortens `line.length` at
 `reelSpeed`, pulling the fish in and adding tension when the fish resists. `[` and `]`

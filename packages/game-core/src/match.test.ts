@@ -41,7 +41,7 @@ describe("createMatch", () => {
 const STILL = { x: 0, z: 0 };
 const IDLE: MatchInputs = {
   fish: { move: STILL, dive: false },
-  fisherman: { move: STILL, cast: false },
+  fisherman: { move: STILL, cast: false, dragChange: 0 },
 };
 
 describe("stepMatch", () => {
@@ -60,7 +60,7 @@ describe("stepMatch", () => {
     const start = createMatch(DEFAULT_CONFIG);
     const inputs: MatchInputs = {
       fish: { move: { x: 1, z: 0 }, dive: false },
-      fisherman: { move: { x: -1, z: 0 }, cast: false },
+      fisherman: { move: { x: -1, z: 0 }, cast: false, dragChange: 0 },
     };
     const next = stepMatch(start, inputs, DEFAULT_CONFIG, dt);
     expect(next.fish.position.x).toBeGreaterThan(start.fish.position.x);
@@ -70,7 +70,7 @@ describe("stepMatch", () => {
 
 describe("stepMatch casting", () => {
   const dt = 1 / DEFAULT_CONFIG.tickRate;
-  const pressCast: MatchInputs = { ...IDLE, fisherman: { move: STILL, cast: true } };
+  const pressCast: MatchInputs = { ...IDLE, fisherman: { move: STILL, cast: true, dragChange: 0 } };
 
   it("starts with the line idle", () => {
     expect(createMatch(DEFAULT_CONFIG).line).toEqual({ phase: "idle" });
@@ -95,30 +95,76 @@ const HOOKED_12 = { phase: "hooked" as const, length: 12, tension: 0, overTensio
 describe("stepMatch hooked fish", () => {
   const dt = 1 / DEFAULT_CONFIG.tickRate;
 
-  function runHooked(fish: MatchInputs["fish"], ticks: number): MatchState {
-    let state: MatchState = { ...createMatch(DEFAULT_CONFIG), line: HOOKED_12 };
-    for (let i = 0; i < ticks; i++) state = stepMatch(state, { ...IDLE, fish }, DEFAULT_CONFIG, dt);
+  /** Max drag: the reel never lets line out, so a hard pull can snap it. */
+  const LOCKED_REEL = { drag: DEFAULT_CONFIG.reel.maxDrag };
+
+  function runHooked(
+    fish: MatchInputs["fish"],
+    ticks: number,
+    options: { drag?: number; reel?: boolean } = {},
+  ): MatchState {
+    const start = createMatch(DEFAULT_CONFIG);
+    let state: MatchState = {
+      ...start,
+      line: HOOKED_12,
+      fisherman: { ...start.fisherman, drag: options.drag ?? DEFAULT_CONFIG.reel.initialDrag },
+    };
+    const fisherman = { ...IDLE.fisherman, cast: options.reel ?? false };
+    for (let i = 0; i < ticks; i++) {
+      state = stepMatch(state, { fish, fisherman }, DEFAULT_CONFIG, dt);
+    }
     return state;
   }
+
+  const fleeing = { move: { x: 0, z: -1 }, dive: false };
+  const resting = { move: { x: 0, z: 0 }, dive: false };
+  const hookedLength = (s: MatchState) => (s.line.phase === "hooked" ? s.line.length : NaN);
+
+  it("reeling shortens the line and pulls the fish in", () => {
+    const start = runHooked(resting, 1);
+    const reeled = runHooked(resting, 30, { reel: true });
+    expect(hookedLength(reeled)).toBeLessThan(hookedLength(start));
+    const tip = rodTipPosition(reeled.fisherman, DEFAULT_CONFIG);
+    const { x, y, z } = reeled.fish.position;
+    expect(Math.hypot(x - tip.x, y - tip.y, z - tip.z)).toBeLessThanOrEqual(hookedLength(reeled) + 1e-9);
+  });
+
+  it("with low drag, a pulling fish takes line out instead of snapping it", () => {
+    const state = runHooked(fleeing, 30 * 3, { drag: DEFAULT_CONFIG.reel.minDrag });
+    expect(state.line.phase).toBe("hooked");
+    expect(hookedLength(state)).toBeGreaterThan(HOOKED_12.length);
+  });
+
+  it("snaps even with low drag once all the line is out", () => {
+    const state = runHooked(fleeing, 30 * 60, { drag: DEFAULT_CONFIG.reel.minDrag });
+    expect(state.outcome).toEqual({ winner: "fish", reason: "line-broken" });
+  });
+
+  it("adjusts drag from input, within limits", () => {
+    let state = createMatch(DEFAULT_CONFIG);
+    const tighten: MatchInputs = { ...IDLE, fisherman: { ...IDLE.fisherman, dragChange: 1 } };
+    for (let i = 0; i < 30 * 10; i++) state = stepMatch(state, tighten, DEFAULT_CONFIG, dt);
+    expect(state.fisherman.drag).toBe(DEFAULT_CONFIG.reel.maxDrag);
+  });
 
   it("starts with no outcome", () => {
     expect(createMatch(DEFAULT_CONFIG).outcome).toBeNull();
   });
 
   it("snaps the line and lets the fish win when it pulls hard for long enough", () => {
-    const state = runHooked({ move: { x: 0, z: -1 }, dive: false }, 30 * 10);
+    const state = runHooked(fleeing, 30 * 10, LOCKED_REEL);
     expect(state.line.phase).toBe("idle");
     expect(state.outcome).toEqual({ winner: "fish", reason: "line-broken" });
   });
 
   it("builds tension while pulling, before it snaps", () => {
-    const state = runHooked({ move: { x: 0, z: -1 }, dive: false }, 30);
+    const state = runHooked(fleeing, 30, LOCKED_REEL);
     if (state.line.phase !== "hooked") throw new Error("expected hooked");
     expect(state.line.tension).toBeGreaterThan(0);
   });
 
   it("does not snap while the fish swims toward the rod", () => {
-    const state = runHooked({ move: { x: 0, z: 1 }, dive: false }, 30 * 10);
+    const state = runHooked({ move: { x: 0, z: 1 }, dive: false }, 30 * 10, LOCKED_REEL);
     expect(state.line.phase).toBe("hooked");
     expect(state.outcome).toBeNull();
   });

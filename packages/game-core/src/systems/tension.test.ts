@@ -44,31 +44,58 @@ describe("linePull", () => {
 
 describe("stepTension", () => {
   const FULL_PULL = FISH.swimSpeed;
+  const NO_DRAG = Number.POSITIVE_INFINITY;
   const calm = { tension: 0, overTensionTime: 0 };
 
+  it("holds tension at the drag limit and reports the line slipping", () => {
+    const drag = 40;
+    const next = stepTension({ tension: drag, overTensionTime: 0 }, FULL_PULL, drag, DEFAULT_CONFIG, DT);
+    expect(next.tension).toBe(drag);
+    expect(next.slipping).toBe(true);
+    expect(next.broken).toBe(false);
+  });
+
+  it("is not slipping below the drag limit", () => {
+    expect(stepTension(calm, FULL_PULL, 40, DEFAULT_CONFIG, DT).slipping).toBe(false);
+  });
+
+  it("never breaks while drag is below breakStrength", () => {
+    let t = { ...calm, broken: false };
+    for (let i = 0; i < 600; i++) t = stepTension(t, FULL_PULL, 90, DEFAULT_CONFIG, DT);
+    expect(t.broken).toBe(false);
+  });
+
+  it("can break when drag is at breakStrength (no slip)", () => {
+    let t = { ...calm, broken: false };
+    for (let i = 0; i < 600 && !t.broken; i++) {
+      t = stepTension(t, FULL_PULL, TENSION.breakStrength, DEFAULT_CONFIG, DT);
+    }
+    expect(t.broken).toBe(true);
+  });
+
   it("rises while the fish pulls", () => {
-    const next = stepTension(calm, FULL_PULL, DEFAULT_CONFIG, DT);
+    const next = stepTension(calm, FULL_PULL, NO_DRAG, DEFAULT_CONFIG, DT);
     expect(next.tension).toBeCloseTo((FULL_PULL * TENSION.pullToTension - TENSION.decayRate) * DT);
     expect(next.broken).toBe(false);
   });
 
   it("decays without pull and never goes negative", () => {
-    const next = stepTension({ tension: 0.1, overTensionTime: 0 }, 0, DEFAULT_CONFIG, DT);
+    const next = stepTension({ tension: 0.1, overTensionTime: 0 }, 0, NO_DRAG, DEFAULT_CONFIG, DT);
     expect(next.tension).toBe(0);
   });
 
   it("caps at breakStrength", () => {
     let t = { ...calm, broken: false };
-    for (let i = 0; i < 200 && !t.broken; i++) t = stepTension(t, FULL_PULL, DEFAULT_CONFIG, DT);
+    for (let i = 0; i < 200 && !t.broken; i++) t = stepTension(t, FULL_PULL, NO_DRAG, DEFAULT_CONFIG, DT);
     expect(t.tension).toBeLessThanOrEqual(TENSION.breakStrength);
   });
 
   it("breaks after staying at breakStrength longer than the grace time", () => {
     let t = { tension: TENSION.breakStrength, overTensionTime: 0, broken: false };
     const graceTicks = Math.ceil(TENSION.breakGraceSeconds / DT);
-    for (let i = 0; i < graceTicks - 1; i++) t = stepTension(t, FULL_PULL, DEFAULT_CONFIG, DT);
+    for (let i = 0; i < graceTicks - 1; i++) t = stepTension(t, FULL_PULL, NO_DRAG, DEFAULT_CONFIG, DT);
     expect(t.broken).toBe(false);
-    for (let i = 0; i < 2; i++) t = stepTension(t, FULL_PULL, DEFAULT_CONFIG, DT);
+    for (let i = 0; i < 2; i++) t = stepTension(t, FULL_PULL, NO_DRAG, DEFAULT_CONFIG, DT);
     expect(t.broken).toBe(true);
   });
 
@@ -76,12 +103,13 @@ describe("stepTension", () => {
     const spiking = stepTension(
       { tension: TENSION.breakStrength, overTensionTime: 0 },
       FULL_PULL,
+      NO_DRAG,
       DEFAULT_CONFIG,
       DT,
     );
     expect(spiking.overTensionTime).toBeGreaterThan(0);
 
-    const eased = stepTension(spiking, 0, DEFAULT_CONFIG, DT);
+    const eased = stepTension(spiking, 0, NO_DRAG, DEFAULT_CONFIG, DT);
     expect(eased.broken).toBe(false);
     expect(eased.overTensionTime).toBe(0);
   });

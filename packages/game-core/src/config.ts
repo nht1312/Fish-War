@@ -67,6 +67,23 @@ export interface TensionConfig {
   readonly tautTolerance: number;
 }
 
+export interface ReelConfig {
+  /** Line reeled in per second while reeling (m/s). */
+  readonly reelSpeed: number;
+  /** Scales how much reeling against a pulling fish adds to tension. */
+  readonly rodForce: number;
+  /** Shortest line; keeps the hooked fish in the water below the rod tip (m). */
+  readonly minLength: number;
+  /** All the line on the reel; the drag cannot let out more (m). */
+  readonly maxLength: number;
+  readonly minDrag: number;
+  /** Highest drag; at breakStrength the reel never slips. */
+  readonly maxDrag: number;
+  readonly initialDrag: number;
+  /** Drag change per second while adjusting. */
+  readonly dragAdjustRate: number;
+}
+
 /** Every gameplay tuning value. Passed in, never hard-coded in systems. */
 export interface MatchConfig {
   /** Simulation ticks per second. */
@@ -80,6 +97,7 @@ export interface MatchConfig {
   readonly rod: RodConfig;
   readonly line: LineConfig;
   readonly tension: TensionConfig;
+  readonly reel: ReelConfig;
   readonly fishSpawn: Vec3;
   readonly fishermanSpawn: Vec3;
 }
@@ -122,6 +140,16 @@ export const DEFAULT_CONFIG: MatchConfig = {
     decayRate: 20,
     breakGraceSeconds: 1,
     tautTolerance: 0.05,
+  },
+  reel: {
+    reelSpeed: 3,
+    rodForce: 2,
+    minLength: 4,
+    maxLength: 30,
+    minDrag: 20,
+    maxDrag: 100,
+    initialDrag: 60,
+    dragAdjustRate: 40,
   },
   fishSpawn: { x: 0, y: -FISH_SPAWN_DEPTH, z: 0 },
   fishermanSpawn: { x: DOCK.center.x, y: DOCK.height, z: DOCK.center.z },

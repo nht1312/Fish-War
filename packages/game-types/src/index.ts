@@ -40,6 +40,8 @@ export interface FishermanState {
   readonly yaw: number;
   /** Cast button state last tick, so the sim can tell a fresh press from a hold. */
   readonly castHeld: boolean;
+  /** Reel drag: the tension above which the reel lets line out. */
+  readonly drag: number;
 }
 
 /**
@@ -79,8 +81,10 @@ export interface FishInput {
 export interface FishermanInput {
   /** Desired walk direction on the dock; magnitude above 1 is normalised. */
   readonly move: HorizontalVec;
-  /** Cast button held. A fresh press casts, or retrieves a cast hook. */
+  /** Cast button. A fresh press casts or retrieves; held while hooked, it reels. */
   readonly cast: boolean;
+  /** Drag adjustment direction, -1 (looser) to 1 (tighter). */
+  readonly dragChange: number;
 }
 
 /** Every player's intent for one tick. */

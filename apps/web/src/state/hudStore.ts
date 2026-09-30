@@ -7,15 +7,23 @@ export interface HudState {
   readonly lineHooked: boolean;
   /** Line tension as a fraction of breakStrength, 0..1. */
   readonly tensionRatio: number;
+  /** Reel drag as a fraction of breakStrength, 0..1. */
+  readonly dragRatio: number;
 }
 
-export const useHudStore = create<HudState>(() => ({ lineHooked: false, tensionRatio: 0 }));
+export const useHudStore = create<HudState>(() => ({
+  lineHooked: false,
+  tensionRatio: 0,
+  dragRatio: 0,
+}));
 
 /** Derive the HUD values from the current sim state. */
 export function selectHud(state: MatchState, config: MatchConfig): HudState {
-  if (state.line.phase !== "hooked") return { lineHooked: false, tensionRatio: 0 };
+  const { breakStrength } = config.tension;
+  const { line } = state;
   return {
-    lineHooked: true,
-    tensionRatio: state.line.tension / config.tension.breakStrength,
+    lineHooked: line.phase === "hooked",
+    tensionRatio: line.phase === "hooked" ? line.tension / breakStrength : 0,
+    dragRatio: state.fisherman.drag / breakStrength,
   };
 }

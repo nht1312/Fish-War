@@ -41,7 +41,10 @@ function readFishInput(keyboard: Keyboard): FishInput {
   };
 }
 
-/** Hot-seat Fisherman controls: arrow keys walk (Up = toward the pond, -Z), Enter casts. */
+/**
+ * Hot-seat Fisherman controls: arrow keys walk (Up = toward the pond, -Z),
+ * Enter casts / retrieves (hold while hooked to reel), [ and ] loosen / tighten drag.
+ */
 function readFishermanInput(keyboard: Keyboard): FishermanInput {
   return {
     move: {
@@ -49,6 +52,7 @@ function readFishermanInput(keyboard: Keyboard): FishermanInput {
       z: axis(keyboard, "ArrowUp", "ArrowDown"),
     },
     cast: keyboard.isDown("Enter"),
+    dragChange: axis(keyboard, "BracketLeft", "BracketRight"),
   };
 }
 

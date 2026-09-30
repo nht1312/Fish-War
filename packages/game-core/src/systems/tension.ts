@@ -10,6 +10,8 @@ export interface TensionState {
 
 export interface TensionStep extends TensionState {
   readonly broken: boolean;
+  /** Tension wanted to exceed the drag, so the reel should let line out. */
+  readonly slipping: boolean;
 }
 
 /**
@@ -38,18 +40,26 @@ export function linePull(
 
 /**
  * Advance line tension by one tick. Pull builds tension, which decays
- * constantly; it is clamped to [0, breakStrength]. Staying at breakStrength
- * longer than breakGraceSeconds breaks the line.
+ * constantly. Tension is held at `dragLimit` (the reel slips instead) and never
+ * exceeds breakStrength; staying at breakStrength longer than
+ * breakGraceSeconds breaks the line. Pass Infinity when the reel cannot slip.
  */
 export function stepTension(
   current: TensionState,
   pull: number,
+  dragLimit: number,
   config: MatchConfig,
   dt: number,
 ): TensionStep {
   const { pullToTension, decayRate, breakStrength, breakGraceSeconds } = config.tension;
+  const limit = Math.min(dragLimit, breakStrength);
   const raw = current.tension + (pull * pullToTension - decayRate) * dt;
-  const tension = Math.min(Math.max(raw, 0), breakStrength);
+  const tension = Math.min(Math.max(raw, 0), limit);
   const overTensionTime = tension >= breakStrength ? current.overTensionTime + dt : 0;
-  return { tension, overTensionTime, broken: overTensionTime > breakGraceSeconds };
+  return {
+    tension,
+    overTensionTime,
+    broken: overTensionTime > breakGraceSeconds,
+    slipping: raw > limit && limit < breakStrength,
+  };
 }
