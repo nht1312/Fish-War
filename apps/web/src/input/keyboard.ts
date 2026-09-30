@@ -35,7 +35,7 @@ function axis(keyboard: Keyboard, negative: string, positive: string): number {
 
 /**
  * Hot-seat Fish controls: WASD swims (W = away from the dock, toward -Z),
- * hold C to dive, hold Left Shift to sprint, Space to dash.
+ * hold C to dive, hold Left Shift to sprint, Space to dash, F to fire the water gun.
  */
 function readFishInput(keyboard: Keyboard): FishInput {
   return {
@@ -43,6 +43,7 @@ function readFishInput(keyboard: Keyboard): FishInput {
     dive: keyboard.isDown("KeyC"),
     sprint: keyboard.isDown("ShiftLeft"),
     dash: keyboard.isDown("Space"),
+    shoot: keyboard.isDown("KeyF"),
   };
 }
 

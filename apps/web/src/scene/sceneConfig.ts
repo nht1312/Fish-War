@@ -51,3 +51,10 @@ export const LINE_STYLE = {
   bobberRadius: 0.15,
   bobberColor: "#e63946",
 } as const;
+
+export const SHOT_STYLE = {
+  radius: 0.2,
+  color: "#8ecae6",
+  /** Most shots drawn at once; the gun's cooldown keeps far fewer in the air. */
+  maxVisible: 8,
+} as const;

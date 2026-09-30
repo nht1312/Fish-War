@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 
+import { BalanceBar } from "../ui/BalanceBar";
 import { StaminaBar } from "../ui/StaminaBar";
 import { TensionBar } from "../ui/TensionBar";
 
@@ -14,6 +15,7 @@ export function GameCanvasLoader() {
       <GameCanvas />
       <TensionBar />
       <StaminaBar />
+      <BalanceBar />
     </div>
   );
 }

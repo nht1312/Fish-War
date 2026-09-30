@@ -34,6 +34,8 @@ export interface FishState {
   readonly stamina: number;
   /** Seconds until the fish can dash again; 0 when ready. */
   readonly dashCooldown: number;
+  /** Seconds until the water gun can fire again; 0 when ready. */
+  readonly shotCooldown: number;
 }
 
 export interface FishermanState {
@@ -46,6 +48,18 @@ export interface FishermanState {
   readonly castHeld: boolean;
   /** Reel drag: the tension above which the reel lets line out. */
   readonly drag: number;
+  /** 0..maxBalance. Water gun hits knock it down; at 0 he is knocked out. */
+  readonly balance: number;
+  /** Seconds left of the stagger from the last hit; no reeling while > 0. */
+  readonly staggerTime: number;
+}
+
+/** A water gun shot in flight. */
+export interface Projectile {
+  readonly position: Vec3;
+  readonly velocity: Vec3;
+  /** Seconds since it was fired. */
+  readonly age: number;
 }
 
 /**
@@ -66,7 +80,7 @@ export type LineState =
     };
 
 /** Why a match ended. More reasons arrive with their systems. */
-export type OutcomeReason = "line-broken" | "fish-exhausted";
+export type OutcomeReason = "line-broken" | "fish-exhausted" | "fisherman-knocked-out";
 
 export interface MatchOutcome {
   readonly winner: Role;
@@ -83,6 +97,8 @@ export interface FishInput {
   readonly sprint: boolean;
   /** Dash button; dashes whenever the dash is ready. */
   readonly dash: boolean;
+  /** Water gun trigger; fires whenever the gun is ready and the fish is surfaced. */
+  readonly shoot: boolean;
 }
 
 /** What the fisherman player wants to do this tick. Intent only, never results. */
@@ -112,6 +128,8 @@ export interface MatchState {
   readonly fish: FishState;
   readonly fisherman: FishermanState;
   readonly line: LineState;
+  /** Water gun shots currently in the air. */
+  readonly projectiles: readonly Projectile[];
   /** Set once a win condition is met; null while the match is undecided. */
   readonly outcome: MatchOutcome | null;
 }

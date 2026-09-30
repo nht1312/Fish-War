@@ -27,6 +27,7 @@ export {
   type ReelConfig,
   type RodConfig,
   type TensionConfig,
+  type WaterGunConfig,
 } from "./config";
 export { createMatch, stepMatch } from "./match";
 export { applyTensionSpike, stepDash, type DashStep } from "./systems/dash";
@@ -42,6 +43,16 @@ export {
   type StaminaLoad,
 } from "./systems/stamina";
 export { linePull, stepTension, type TensionState, type TensionStep } from "./systems/tension";
+export {
+  fireWaterGun,
+  fishermanTarget,
+  stepBalance,
+  stepProjectiles,
+  stepWaterGun,
+  type FireStep,
+  type ProjectileStep,
+  type WaterGunStep,
+} from "./systems/waterGun";
 export {
   integrateKinematic,
   type Bounds2D,

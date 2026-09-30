@@ -1,5 +1,4 @@
 import type {
-  FishermanInput,
   FishInput,
   FishState,
   LineState,
@@ -32,13 +31,12 @@ export function stepHookedFight(
   line: HookedLine,
   swum: FishState,
   fishInput: FishInput,
-  fishermanInput: FishermanInput,
+  reeling: boolean,
   drag: number,
   tip: Vec3,
   config: MatchConfig,
   dt: number,
 ): FightStep {
-  const reeling = fishermanInput.cast;
   const reeledLength = reelInLine(line.length, reeling, config, dt);
   const fish = constrainToLine(swum, tip, reeledLength);
 

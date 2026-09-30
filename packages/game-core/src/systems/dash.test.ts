@@ -14,6 +14,7 @@ const ready: FishState = {
   yaw: Math.PI / 2,
   stamina: FISH.maxStamina,
   dashCooldown: 0,
+  shotCooldown: 0,
 };
 
 const input = (dash: boolean): FishInput => ({
@@ -21,6 +22,7 @@ const input = (dash: boolean): FishInput => ({
   dive: false,
   sprint: false,
   dash,
+  shoot: false,
 });
 
 describe("stepDash", () => {

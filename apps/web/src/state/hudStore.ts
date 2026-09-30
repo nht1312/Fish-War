@@ -11,6 +11,8 @@ export interface HudState {
   readonly dragRatio: number;
   /** Fish stamina as a fraction of maxStamina, 0..1. */
   readonly staminaRatio: number;
+  /** Fisherman balance as a fraction of maxBalance, 0..1. */
+  readonly balanceRatio: number;
 }
 
 export const useHudStore = create<HudState>(() => ({
@@ -18,6 +20,7 @@ export const useHudStore = create<HudState>(() => ({
   tensionRatio: 0,
   dragRatio: 0,
   staminaRatio: 1,
+  balanceRatio: 1,
 }));
 
 /** Derive the HUD values from the current sim state. */
@@ -29,5 +32,6 @@ export function selectHud(state: MatchState, config: MatchConfig): HudState {
     tensionRatio: line.phase === "hooked" ? line.tension / breakStrength : 0,
     dragRatio: state.fisherman.drag / breakStrength,
     staminaRatio: state.fish.stamina / config.fish.maxStamina,
+    balanceRatio: state.fisherman.balance / config.waterGun.maxBalance,
   };
 }

@@ -18,6 +18,7 @@ function fishOut(d: number): FishState {
     yaw: Math.PI,
     stamina: DEFAULT_CONFIG.fish.maxStamina,
     dashCooldown: 0,
+    shotCooldown: 0,
   };
 }
 
@@ -26,6 +27,7 @@ const swim = (x: number, z: number, sprint = false): FishInput => ({
   dive: false,
   sprint,
   dash: false,
+  shoot: false,
 });
 
 describe("linePull", () => {

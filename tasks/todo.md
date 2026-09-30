@@ -262,7 +262,7 @@ input.
 **Files likely touched:** `packages/game-core/src/systems/dash.ts` + test, `packages/game-core/src/{config,match}.ts`, `apps/web/src/input/keyboard.ts`
 **Scope:** S–M
 
-### - [ ] Task 12: Water gun and fisherman knockout
+### - [x] Task 12: Water gun and fisherman knockout
 
 **Description:** When the fish is at the surface, `F` fires a water projectile toward
 the fisherman. Projectiles live in `MatchState.projectiles` (plain data), move

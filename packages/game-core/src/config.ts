@@ -101,6 +101,28 @@ export interface ReelConfig {
   readonly dragAdjustRate: number;
 }
 
+export interface WaterGunConfig {
+  /** Approximate shot speed; sets the flight time of an aimed shot (m/s). */
+  readonly shotSpeed: number;
+  /** Downward acceleration on shots (m/s²). */
+  readonly gravity: number;
+  /** Seconds between shots. */
+  readonly shotCooldown: number;
+  /** Shots older than this expire (s). */
+  readonly maxShotAge: number;
+  /** A shot this close to the target hits (m). */
+  readonly hitRadius: number;
+  /** Height of the fisherman's torso above his feet: the aim point (m). */
+  readonly targetHeight: number;
+  readonly maxBalance: number;
+  /** Balance lost per hit. */
+  readonly hitDamage: number;
+  /** Balance regained per second between hits. */
+  readonly balanceRegen: number;
+  /** Seconds a hit stops the fisherman from reeling. */
+  readonly staggerSeconds: number;
+}
+
 /** Every gameplay tuning value. Passed in, never hard-coded in systems. */
 export interface MatchConfig {
   /** Simulation ticks per second. */
@@ -115,6 +137,7 @@ export interface MatchConfig {
   readonly line: LineConfig;
   readonly tension: TensionConfig;
   readonly reel: ReelConfig;
+  readonly waterGun: WaterGunConfig;
   readonly fishSpawn: Vec3;
   readonly fishermanSpawn: Vec3;
 }
@@ -176,6 +199,18 @@ export const DEFAULT_CONFIG: MatchConfig = {
     maxDrag: 100,
     initialDrag: 60,
     dragAdjustRate: 40,
+  },
+  waterGun: {
+    shotSpeed: 14,
+    gravity: 9.8,
+    shotCooldown: 0.8,
+    maxShotAge: 3,
+    hitRadius: 0.8,
+    targetHeight: 1.4,
+    maxBalance: 100,
+    hitDamage: 20,
+    balanceRegen: 5,
+    staggerSeconds: 0.6,
   },
   fishSpawn: { x: 0, y: -FISH_SPAWN_DEPTH, z: 0 },
   fishermanSpawn: { x: DOCK.center.x, y: DOCK.height, z: DOCK.center.z },

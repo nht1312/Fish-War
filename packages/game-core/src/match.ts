@@ -8,6 +8,7 @@ import { stepHookedFight } from "./systems/fight";
 import { rodTipPosition, stepLine } from "./systems/line";
 import { stepDrag } from "./systems/reel";
 import { isSprinting, stepStamina } from "./systems/stamina";
+import { stepWaterGun } from "./systems/waterGun";
 
 const AT_REST = { x: 0, y: 0, z: 0 } as const;
 
@@ -22,6 +23,7 @@ export function createMatch(config: MatchConfig): MatchState {
       yaw: 0,
       stamina: config.fish.maxStamina,
       dashCooldown: 0,
+      shotCooldown: 0,
     },
     fisherman: {
       position: config.fishermanSpawn,
@@ -29,13 +31,17 @@ export function createMatch(config: MatchConfig): MatchState {
       yaw: config.fisherman.spawnYaw,
       castHeld: false,
       drag: config.reel.initialDrag,
+      balance: config.waterGun.maxBalance,
+      staggerTime: 0,
     },
     line: { phase: "idle" },
+    projectiles: [],
     outcome: null,
   };
 }
 
 const FISH_EXHAUSTED: MatchOutcome = { winner: "fisherman", reason: "fish-exhausted" };
+const FISHERMAN_KNOCKED_OUT: MatchOutcome = { winner: "fish", reason: "fisherman-knocked-out" };
 
 /**
  * Advance the match by one fixed tick of `dt` seconds. Pure: returns a new
@@ -48,17 +54,19 @@ export function stepMatch(
   dt: number,
 ): MatchState {
   const walked = stepFishermanMovement(state.fisherman, inputs.fisherman, config, dt);
-  const fisherman = {
-    ...walked,
-    drag: stepDrag(walked.drag, inputs.fisherman.dragChange, config, dt),
-  };
   const dash = stepDash(
     stepFishMovement(state.fish, inputs.fish, config, dt),
     inputs.fish,
     config,
     dt,
   );
-  const swum = dash.fish;
+  const water = stepWaterGun(dash.fish, walked, state.projectiles, inputs.fish, config, dt);
+  const fisherman = {
+    ...water.fisherman,
+    drag: stepDrag(walked.drag, inputs.fisherman.dragChange, config, dt),
+  };
+  const swum = water.fish;
+  const reeling = inputs.fisherman.cast && fisherman.staggerTime <= 0;
   const castLine = stepLine(state.line, fisherman, swum, inputs.fisherman, config);
   const fight =
     castLine.phase === "hooked"
@@ -66,7 +74,7 @@ export function stepMatch(
           castLine,
           swum,
           inputs.fish,
-          inputs.fisherman,
+          reeling,
           fisherman.drag,
           rodTipPosition(fisherman, config),
           config,
@@ -85,6 +93,7 @@ export function stepMatch(
     dt,
   );
   const exhausted = line.phase === "hooked" && stamina === 0 ? FISH_EXHAUSTED : null;
+  const knockedOut = water.knockedOut ? FISHERMAN_KNOCKED_OUT : null;
 
   return {
     ...state,
@@ -92,7 +101,8 @@ export function stepMatch(
     time: state.time + dt,
     fish: { ...fight.fish, stamina },
     line,
+    projectiles: water.projectiles,
     fisherman: { ...fisherman, castHeld: inputs.fisherman.cast },
-    outcome: state.outcome ?? fight.outcome ?? exhausted,
+    outcome: state.outcome ?? fight.outcome ?? exhausted ?? knockedOut,
   };
 }

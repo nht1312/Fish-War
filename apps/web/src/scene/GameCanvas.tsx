@@ -10,6 +10,7 @@ import { FishermanMesh } from "./FishermanMesh";
 import { FishingLine } from "./FishingLine";
 import { FishMesh } from "./FishMesh";
 import { Pond } from "./Pond";
+import { Projectiles } from "./Projectiles";
 import { Rod } from "./Rod";
 import { CAMERA, LIGHTING } from "./sceneConfig";
 import { SimLoop } from "./SimLoop";
@@ -30,6 +31,7 @@ export default function GameCanvas() {
       <FishermanMesh runner={runner} />
       <Rod runner={runner} />
       <FishingLine runner={runner} />
+      <Projectiles runner={runner} />
     </Canvas>
   );
 }

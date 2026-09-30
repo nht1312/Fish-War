@@ -13,14 +13,15 @@ const atRest: FishState = {
   yaw: 0,
   stamina: DEFAULT_CONFIG.fish.maxStamina,
   dashCooldown: 0,
+  shotCooldown: 0,
 };
 
-const input = (x: number, z: number, dive = false): FishInput => ({ move: { x, z }, dive, sprint: false, dash: false });
+const input = (x: number, z: number, dive = false): FishInput => ({ move: { x, z }, dive, sprint: false, dash: false, shoot: false });
 
 function run(state: FishState, move: HorizontalVec, ticks: number, dive = false): FishState {
   let s = state;
   for (let i = 0; i < ticks; i++) {
-    s = stepFishMovement(s, { move, dive, sprint: false, dash: false }, DEFAULT_CONFIG, DT);
+    s = stepFishMovement(s, { move, dive, sprint: false, dash: false, shoot: false }, DEFAULT_CONFIG, DT);
   }
   return s;
 }

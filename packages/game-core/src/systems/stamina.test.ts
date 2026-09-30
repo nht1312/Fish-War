@@ -14,6 +14,7 @@ function fishWith(stamina: number): FishState {
     yaw: 0,
     stamina,
     dashCooldown: 0,
+    shotCooldown: 0,
   };
 }
 
@@ -22,6 +23,7 @@ const input = (sprint: boolean, x = 0, z = -1): FishInput => ({
   dive: false,
   sprint,
   dash: false,
+  shoot: false,
 });
 
 describe("isSprinting", () => {

@@ -40,7 +40,7 @@ describe("createMatch", () => {
 
 const STILL = { x: 0, z: 0 };
 const IDLE: MatchInputs = {
-  fish: { move: STILL, dive: false, sprint: false, dash: false },
+  fish: { move: STILL, dive: false, sprint: false, dash: false, shoot: false },
   fisherman: { move: STILL, cast: false, dragChange: 0 },
 };
 
@@ -59,7 +59,7 @@ describe("stepMatch", () => {
   it("moves the fish and the fisherman independently in the same tick", () => {
     const start = createMatch(DEFAULT_CONFIG);
     const inputs: MatchInputs = {
-      fish: { move: { x: 1, z: 0 }, dive: false, sprint: false, dash: false },
+      fish: { move: { x: 1, z: 0 }, dive: false, sprint: false, dash: false, shoot: false },
       fisherman: { move: { x: -1, z: 0 }, cast: false, dragChange: 0 },
     };
     const next = stepMatch(start, inputs, DEFAULT_CONFIG, dt);
@@ -116,8 +116,8 @@ describe("stepMatch hooked fish", () => {
     return state;
   }
 
-  const fleeing = { move: { x: 0, z: -1 }, dive: false, sprint: false, dash: false };
-  const resting = { move: { x: 0, z: 0 }, dive: false, sprint: false, dash: false };
+  const fleeing = { move: { x: 0, z: -1 }, dive: false, sprint: false, dash: false, shoot: false };
+  const resting = { move: { x: 0, z: 0 }, dive: false, sprint: false, dash: false, shoot: false };
   const hookedLength = (s: MatchState) => (s.line.phase === "hooked" ? s.line.length : NaN);
 
   it("reeling shortens the line and pulls the fish in", () => {
@@ -143,7 +143,7 @@ describe("stepMatch hooked fish", () => {
   it("lets the fisherman win when the hooked fish runs out of stamina", () => {
     const start = createMatch(DEFAULT_CONFIG);
     let state: MatchState = { ...start, line: HOOKED_12, fish: { ...start.fish, stamina: 0.5 } };
-    const sprintAway = { move: { x: 0, z: -1 }, dive: false, sprint: true, dash: false };
+    const sprintAway = { move: { x: 0, z: -1 }, dive: false, sprint: true, dash: false, shoot: false };
     for (let i = 0; i < 30 && state.outcome === null; i++) {
       state = stepMatch(state, { ...IDLE, fish: sprintAway }, DEFAULT_CONFIG, dt);
     }
@@ -190,7 +190,7 @@ describe("stepMatch hooked fish", () => {
   });
 
   it("does not snap while the fish swims toward the rod", () => {
-    const state = runHooked({ move: { x: 0, z: 1 }, dive: false, sprint: false, dash: false }, 30 * 10, LOCKED_REEL);
+    const state = runHooked({ move: { x: 0, z: 1 }, dive: false, sprint: false, dash: false, shoot: false }, 30 * 10, LOCKED_REEL);
     expect(state.line.phase).toBe("hooked");
     expect(state.outcome).toBeNull();
   });
@@ -198,7 +198,7 @@ describe("stepMatch hooked fish", () => {
   it("keeps a hooked fish within the line length while it swims away", () => {
     const start = createMatch(DEFAULT_CONFIG);
     const hooked = { ...start, line: HOOKED_12 };
-    const fleeing: MatchInputs = { ...IDLE, fish: { move: { x: 0.3, z: -1 }, dive: false, sprint: false, dash: false } };
+    const fleeing: MatchInputs = { ...IDLE, fish: { move: { x: 0.3, z: -1 }, dive: false, sprint: false, dash: false, shoot: false } };
 
     let state: MatchState = hooked;
     // Two seconds: long enough to hit the end of the line, short of snapping it.
@@ -213,7 +213,7 @@ describe("stepMatch hooked fish", () => {
 
 describe("stepMatch stamina", () => {
   const dt = 1 / DEFAULT_CONFIG.tickRate;
-  const sprint = { move: { x: 1, z: 0 }, dive: false, sprint: true, dash: false };
+  const sprint = { move: { x: 1, z: 0 }, dive: false, sprint: true, dash: false, shoot: false };
 
   it("starts the fish at full stamina", () => {
     expect(createMatch(DEFAULT_CONFIG).fish.stamina).toBe(DEFAULT_CONFIG.fish.maxStamina);
@@ -233,6 +233,45 @@ describe("stepMatch stamina", () => {
     let state: MatchState = { ...start, fish: { ...start.fish, stamina: 0.2 } };
     for (let i = 0; i < 10; i++) state = stepMatch(state, { ...IDLE, fish: sprint }, DEFAULT_CONFIG, dt);
     expect(state.outcome).toBeNull();
+  });
+});
+
+describe("stepMatch water gun", () => {
+  const dt = 1 / DEFAULT_CONFIG.tickRate;
+
+  it("starts with no shots in the air and the fisherman steady", () => {
+    const state = createMatch(DEFAULT_CONFIG);
+    expect(state.projectiles).toEqual([]);
+    expect(state.fisherman.balance).toBe(DEFAULT_CONFIG.waterGun.maxBalance);
+  });
+
+  it("knocks the fisherman out when his balance runs out: Fish wins", () => {
+    const start = createMatch(DEFAULT_CONFIG);
+    const surfaced = { ...start.fish, position: { x: 0, y: 0, z: 5 } };
+    let state: MatchState = {
+      ...start,
+      fish: surfaced,
+      fisherman: { ...start.fisherman, balance: DEFAULT_CONFIG.waterGun.hitDamage },
+    };
+    const firing: MatchInputs = { ...IDLE, fish: { ...IDLE.fish, shoot: true } };
+    // Balance regenerates between hits, so it takes a few.
+    for (let i = 0; i < 30 * 5 && state.outcome === null; i++) {
+      state = stepMatch(state, firing, DEFAULT_CONFIG, dt);
+    }
+    expect(state.fisherman.balance).toBe(0);
+    expect(state.outcome).toEqual({ winner: "fish", reason: "fisherman-knocked-out" });
+  });
+
+  it("a staggered fisherman cannot reel", () => {
+    const start = createMatch(DEFAULT_CONFIG);
+    const hooked: MatchState = {
+      ...start,
+      line: HOOKED_12,
+      fisherman: { ...start.fisherman, staggerTime: 1 },
+    };
+    const reel: MatchInputs = { ...IDLE, fisherman: { ...IDLE.fisherman, cast: true } };
+    const next = stepMatch(hooked, reel, DEFAULT_CONFIG, dt);
+    expect(next.line.phase === "hooked" && next.line.length).toBe(HOOKED_12.length);
   });
 });
 
