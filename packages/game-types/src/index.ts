@@ -159,3 +159,5 @@ export interface MatchState {
   /** Set once a win condition is met; null while the match is undecided. */
   readonly outcome: MatchOutcome | null;
 }
+
+export type { ClientMessage, ServerMessage } from "./protocol";

@@ -368,7 +368,7 @@ timer and a minimal result overlay, and `R` restarts.
 Scope and decisions: plan Decisions 12–17. One room, two seats, JSON over `ws`,
 server authoritative, local-first.
 
-### - [ ] Task 16: Protocol types and message parsing
+### - [x] Task 16: Protocol types and message parsing
 
 **Description:** Define the wire protocol and a safe parser. Types go in
 `game-types/src/protocol.ts`. Client→server messages: `input` (`seq`, plus

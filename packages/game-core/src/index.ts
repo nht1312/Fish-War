@@ -33,6 +33,7 @@ export {
   type WaterGunConfig,
 } from "./config";
 export { createMatch, stepMatch } from "./match";
+export { parseClientMessage, parseServerMessage } from "./protocol";
 export { applyTensionSpike, stepDash, type DashStep } from "./systems/dash";
 export { isInvulnerable, stepDodge } from "./systems/dodge";
 export { stepHookedFight, type FightStep } from "./systems/fight";
