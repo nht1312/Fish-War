@@ -528,7 +528,7 @@ balance tuning are not in scope.
 **Files likely touched:** \`apps/web/src/scene/{FishMesh,FishermanMesh,FishingLine,sceneConfig}.tsx?\`, \`apps/web/src/scene/lineCurve.ts\` + test
 **Scope:** M
 
-### - [ ] Task 22b: Sound effects
+### - [x] Task 22b: Sound effects
 
 **Description:** Synthesised sound effects using the Web Audio API: no audio files and
 no new dependency.

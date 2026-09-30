@@ -30,6 +30,7 @@ export const FISHERMAN_KEYS = {
 export const APP_KEYS = {
   restart: "KeyR",
   menu: "Escape",
+  mute: "KeyM",
 } as const;
 
 export interface ControlsGroup {
@@ -63,6 +64,7 @@ export const CONTROLS_HELP: readonly ControlsGroup[] = [
     rows: [
       { keys: "R", action: "Play again after a match" },
       { keys: "Esc", action: "Back to the menu" },
+      { keys: "M", action: "Mute / unmute sound" },
     ],
   },
 ];
