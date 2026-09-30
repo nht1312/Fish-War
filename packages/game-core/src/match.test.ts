@@ -40,7 +40,7 @@ describe("createMatch", () => {
 
 const STILL = { x: 0, z: 0 };
 const IDLE: MatchInputs = {
-  fish: { move: STILL, dive: false, sprint: false },
+  fish: { move: STILL, dive: false, sprint: false, dash: false },
   fisherman: { move: STILL, cast: false, dragChange: 0 },
 };
 
@@ -59,7 +59,7 @@ describe("stepMatch", () => {
   it("moves the fish and the fisherman independently in the same tick", () => {
     const start = createMatch(DEFAULT_CONFIG);
     const inputs: MatchInputs = {
-      fish: { move: { x: 1, z: 0 }, dive: false, sprint: false },
+      fish: { move: { x: 1, z: 0 }, dive: false, sprint: false, dash: false },
       fisherman: { move: { x: -1, z: 0 }, cast: false, dragChange: 0 },
     };
     const next = stepMatch(start, inputs, DEFAULT_CONFIG, dt);
@@ -116,8 +116,8 @@ describe("stepMatch hooked fish", () => {
     return state;
   }
 
-  const fleeing = { move: { x: 0, z: -1 }, dive: false, sprint: false };
-  const resting = { move: { x: 0, z: 0 }, dive: false, sprint: false };
+  const fleeing = { move: { x: 0, z: -1 }, dive: false, sprint: false, dash: false };
+  const resting = { move: { x: 0, z: 0 }, dive: false, sprint: false, dash: false };
   const hookedLength = (s: MatchState) => (s.line.phase === "hooked" ? s.line.length : NaN);
 
   it("reeling shortens the line and pulls the fish in", () => {
@@ -143,12 +143,27 @@ describe("stepMatch hooked fish", () => {
   it("lets the fisherman win when the hooked fish runs out of stamina", () => {
     const start = createMatch(DEFAULT_CONFIG);
     let state: MatchState = { ...start, line: HOOKED_12, fish: { ...start.fish, stamina: 0.5 } };
-    const sprintAway = { move: { x: 0, z: -1 }, dive: false, sprint: true };
+    const sprintAway = { move: { x: 0, z: -1 }, dive: false, sprint: true, dash: false };
     for (let i = 0; i < 30 && state.outcome === null; i++) {
       state = stepMatch(state, { ...IDLE, fish: sprintAway }, DEFAULT_CONFIG, dt);
     }
     expect(state.fish.stamina).toBe(0);
     expect(state.outcome).toEqual({ winner: "fisherman", reason: "fish-exhausted" });
+  });
+
+  it("a dash while hooked spikes the line tension", () => {
+    const calm = runHooked(resting, 1, LOCKED_REEL);
+    const start = createMatch(DEFAULT_CONFIG);
+    const hooked: MatchState = {
+      ...start,
+      line: HOOKED_12,
+      fisherman: { ...start.fisherman, drag: DEFAULT_CONFIG.reel.maxDrag },
+    };
+    const dashing = { ...resting, dash: true };
+    const dashed = stepMatch(hooked, { ...IDLE, fish: dashing }, DEFAULT_CONFIG, dt);
+    const tensionOf = (s: MatchState) => (s.line.phase === "hooked" ? s.line.tension : NaN);
+    expect(tensionOf(dashed)).toBeGreaterThan(tensionOf(calm) + DEFAULT_CONFIG.fish.dashTensionSpike / 2);
+    expect(dashed.fish.stamina).toBeLessThan(start.fish.stamina);
   });
 
   it("adjusts drag from input, within limits", () => {
@@ -175,7 +190,7 @@ describe("stepMatch hooked fish", () => {
   });
 
   it("does not snap while the fish swims toward the rod", () => {
-    const state = runHooked({ move: { x: 0, z: 1 }, dive: false, sprint: false }, 30 * 10, LOCKED_REEL);
+    const state = runHooked({ move: { x: 0, z: 1 }, dive: false, sprint: false, dash: false }, 30 * 10, LOCKED_REEL);
     expect(state.line.phase).toBe("hooked");
     expect(state.outcome).toBeNull();
   });
@@ -183,7 +198,7 @@ describe("stepMatch hooked fish", () => {
   it("keeps a hooked fish within the line length while it swims away", () => {
     const start = createMatch(DEFAULT_CONFIG);
     const hooked = { ...start, line: HOOKED_12 };
-    const fleeing: MatchInputs = { ...IDLE, fish: { move: { x: 0.3, z: -1 }, dive: false, sprint: false } };
+    const fleeing: MatchInputs = { ...IDLE, fish: { move: { x: 0.3, z: -1 }, dive: false, sprint: false, dash: false } };
 
     let state: MatchState = hooked;
     // Two seconds: long enough to hit the end of the line, short of snapping it.
@@ -198,7 +213,7 @@ describe("stepMatch hooked fish", () => {
 
 describe("stepMatch stamina", () => {
   const dt = 1 / DEFAULT_CONFIG.tickRate;
-  const sprint = { move: { x: 1, z: 0 }, dive: false, sprint: true };
+  const sprint = { move: { x: 1, z: 0 }, dive: false, sprint: true, dash: false };
 
   it("starts the fish at full stamina", () => {
     expect(createMatch(DEFAULT_CONFIG).fish.stamina).toBe(DEFAULT_CONFIG.fish.maxStamina);

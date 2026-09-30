@@ -22,7 +22,7 @@ const onDock = fishermanAt(0, 17, FACING_POND);
 const IDLE: LineState = { phase: "idle" };
 
 function fishAt(x: number, y: number, z: number, vx = 0, vz = 0): FishState {
-  return { position: { x, y, z }, velocity: { x: vx, y: 0, z: vz }, yaw: 0, stamina: 100 };
+  return { position: { x, y, z }, velocity: { x: vx, y: 0, z: vz }, yaw: 0, stamina: 100, dashCooldown: 0 };
 }
 
 /** A fish nowhere near any hook. */

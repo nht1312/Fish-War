@@ -242,7 +242,7 @@ reaching `exhausted` while hooked gives `outcome = { winner: "fisherman", reason
 **Files likely touched:** `packages/game-core/src/systems/stamina.ts` + test, `packages/game-core/src/{config,match}.ts`, `apps/web/src/ui/StaminaBar.tsx`, `apps/web/src/input/keyboard.ts`
 **Scope:** M
 
-### - [ ] Task 11: Fish dash
+### - [x] Task 11: Fish dash
 
 **Description:** `Space` triggers a short burst in the facing direction: a velocity
 impulse, a stamina cost, and `dashCooldown`. While hooked, a dash causes a tension

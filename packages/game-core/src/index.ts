@@ -29,6 +29,7 @@ export {
   type TensionConfig,
 } from "./config";
 export { createMatch, stepMatch } from "./match";
+export { applyTensionSpike, stepDash, type DashStep } from "./systems/dash";
 export { stepHookedFight, type FightStep } from "./systems/fight";
 export { stepFishermanMovement } from "./systems/fishermanMovement";
 export { isAtSurface, stepFishMovement } from "./systems/fishMovement";

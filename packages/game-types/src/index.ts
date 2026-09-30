@@ -32,6 +32,8 @@ export interface FishState {
   readonly yaw: number;
   /** 0..maxStamina. Hooked at 0, the fish is exhausted. */
   readonly stamina: number;
+  /** Seconds until the fish can dash again; 0 when ready. */
+  readonly dashCooldown: number;
 }
 
 export interface FishermanState {
@@ -79,6 +81,8 @@ export interface FishInput {
   readonly dive: boolean;
   /** Held to swim faster at the cost of stamina. */
   readonly sprint: boolean;
+  /** Dash button; dashes whenever the dash is ready. */
+  readonly dash: boolean;
 }
 
 /** What the fisherman player wants to do this tick. Intent only, never results. */

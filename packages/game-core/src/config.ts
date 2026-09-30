@@ -38,6 +38,14 @@ export interface FishConfig {
   readonly tensionDrain: number;
   /** Stamina regained per second while resting. */
   readonly staminaRegen: number;
+  /** Speed added along the fish's facing by a dash (m/s). */
+  readonly dashImpulse: number;
+  /** Stamina a dash costs. */
+  readonly dashCost: number;
+  /** Seconds between dashes. */
+  readonly dashCooldown: number;
+  /** Line tension added instantly by a dash while hooked. */
+  readonly dashTensionSpike: number;
 }
 
 export interface FishermanConfig {
@@ -144,6 +152,10 @@ export const DEFAULT_CONFIG: MatchConfig = {
     sprintDrain: 20,
     tensionDrain: 0.12,
     staminaRegen: 12,
+    dashImpulse: 10,
+    dashCost: 15,
+    dashCooldown: 1.5,
+    dashTensionSpike: 25,
   },
   fisherman: { moveSpeed: 4, acceleration: 25, deceleration: 25, spawnYaw: Math.PI },
   rod: { tipHeight: 2.2, tipReach: 1.2, castDistance: 12 },

@@ -83,7 +83,7 @@ the simulation's shape is real.
 
 ### Phase 3 — Fish vs Fisherman actions
 - [x] 10. Fish stamina, sprint, and exhaustion
-- [ ] 11. Fish dash
+- [x] 11. Fish dash
 - [ ] 12. Water gun and fisherman knockout
 - [ ] 13. Fisherman dodge
 - **Checkpoint C** — every §3 ability works

@@ -13,10 +13,16 @@ function fishWith(stamina: number): FishState {
     velocity: { x: 0, y: 0, z: 0 },
     yaw: 0,
     stamina,
+    dashCooldown: 0,
   };
 }
 
-const input = (sprint: boolean, x = 0, z = -1): FishInput => ({ move: { x, z }, dive: false, sprint });
+const input = (sprint: boolean, x = 0, z = -1): FishInput => ({
+  move: { x, z },
+  dive: false,
+  sprint,
+  dash: false,
+});
 
 describe("isSprinting", () => {
   it("needs the sprint button, movement input, and stamina", () => {

@@ -3,6 +3,7 @@ import type { MatchInputs, MatchOutcome, MatchState } from "@fishwar/game-types"
 import type { MatchConfig } from "./config";
 import { stepFishermanMovement } from "./systems/fishermanMovement";
 import { stepFishMovement } from "./systems/fishMovement";
+import { applyTensionSpike, stepDash } from "./systems/dash";
 import { stepHookedFight } from "./systems/fight";
 import { rodTipPosition, stepLine } from "./systems/line";
 import { stepDrag } from "./systems/reel";
@@ -20,6 +21,7 @@ export function createMatch(config: MatchConfig): MatchState {
       velocity: AT_REST,
       yaw: 0,
       stamina: config.fish.maxStamina,
+      dashCooldown: 0,
     },
     fisherman: {
       position: config.fishermanSpawn,
@@ -50,12 +52,18 @@ export function stepMatch(
     ...walked,
     drag: stepDrag(walked.drag, inputs.fisherman.dragChange, config, dt),
   };
-  const swum = stepFishMovement(state.fish, inputs.fish, config, dt);
-  const line = stepLine(state.line, fisherman, swum, inputs.fisherman, config);
+  const dash = stepDash(
+    stepFishMovement(state.fish, inputs.fish, config, dt),
+    inputs.fish,
+    config,
+    dt,
+  );
+  const swum = dash.fish;
+  const castLine = stepLine(state.line, fisherman, swum, inputs.fisherman, config);
   const fight =
-    line.phase === "hooked"
+    castLine.phase === "hooked"
       ? stepHookedFight(
-          line,
+          castLine,
           swum,
           inputs.fish,
           inputs.fisherman,
@@ -64,25 +72,26 @@ export function stepMatch(
           config,
           dt,
         )
-      : { line, fish: swum, outcome: null };
+      : { line: castLine, fish: swum, outcome: null };
 
+  const line = dash.dashed ? applyTensionSpike(fight.line, config) : fight.line;
   const stamina = stepStamina(
-    state.fish.stamina,
+    fight.fish.stamina,
     {
       sprinting: isSprinting(state.fish, inputs.fish),
-      tension: fight.line.phase === "hooked" ? fight.line.tension : 0,
+      tension: line.phase === "hooked" ? line.tension : 0,
     },
     config,
     dt,
   );
-  const exhausted = fight.line.phase === "hooked" && stamina === 0 ? FISH_EXHAUSTED : null;
+  const exhausted = line.phase === "hooked" && stamina === 0 ? FISH_EXHAUSTED : null;
 
   return {
     ...state,
     tick: state.tick + 1,
     time: state.time + dt,
     fish: { ...fight.fish, stamina },
-    line: fight.line,
+    line,
     fisherman: { ...fisherman, castHeld: inputs.fisherman.cast },
     outcome: state.outcome ?? fight.outcome ?? exhausted,
   };
