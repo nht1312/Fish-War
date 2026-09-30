@@ -2,7 +2,6 @@ import type {
   FishInput,
   FishState,
   LineState,
-  MatchOutcome,
   Vec3,
 } from "@fishwar/game-types";
 
@@ -13,12 +12,10 @@ import { linePull, stepTension } from "./tension";
 
 type HookedLine = Extract<LineState, { phase: "hooked" }>;
 
-const LINE_BROKEN: MatchOutcome = { winner: "fish", reason: "line-broken" };
-
 export interface FightStep {
   readonly line: LineState;
   readonly fish: FishState;
-  readonly outcome: MatchOutcome | null;
+  readonly lineBroken: boolean;
 }
 
 /**
@@ -51,7 +48,7 @@ export function stepHookedFight(
     dt,
   );
 
-  if (tension.broken) return { line: { phase: "idle" }, fish, outcome: LINE_BROKEN };
+  if (tension.broken) return { line: { phase: "idle" }, fish, lineBroken: true };
 
   const length = tension.slipping ? payOutLine(reeledLength, fishPull, config, dt) : reeledLength;
   return {
@@ -62,6 +59,6 @@ export function stepHookedFight(
       overTensionTime: tension.overTensionTime,
     },
     fish,
-    outcome: null,
+    lineBroken: false,
   };
 }

@@ -90,7 +90,7 @@ the simulation's shape is real.
 
 ### Phase 4 — Capture & match
 - [x] 14. Fishing net captures the fish
-- [ ] 15. Match state: countdown, timer, escape zone, outcome, restart
+- [x] 15. Match state: countdown, timer, escape zone, outcome, restart
 - **Checkpoint D** — full offline match, start to finish. **Re-plan Phases 5–6 here.**
 
 ### Phase 5 — Multiplayer (coarse)

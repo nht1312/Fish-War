@@ -1,5 +1,5 @@
 import type { MatchConfig } from "@fishwar/game-core";
-import type { MatchState } from "@fishwar/game-types";
+import type { MatchOutcome, MatchPhase, MatchState } from "@fishwar/game-types";
 import { create } from "zustand";
 
 /** Read-only HUD values mirrored from the sim. Never read back into gameplay. */
@@ -13,6 +13,12 @@ export interface HudState {
   readonly staminaRatio: number;
   /** Fisherman balance as a fraction of maxBalance, 0..1. */
   readonly balanceRatio: number;
+  readonly phase: MatchPhase;
+  /** Seconds left before play starts. */
+  readonly countdown: number;
+  /** Seconds of play left. */
+  readonly timeLeft: number;
+  readonly outcome: MatchOutcome | null;
 }
 
 export const useHudStore = create<HudState>(() => ({
@@ -21,6 +27,10 @@ export const useHudStore = create<HudState>(() => ({
   dragRatio: 0,
   staminaRatio: 1,
   balanceRatio: 1,
+  phase: "countdown",
+  countdown: 0,
+  timeLeft: 0,
+  outcome: null,
 }));
 
 /** Derive the HUD values from the current sim state. */
@@ -33,5 +43,9 @@ export function selectHud(state: MatchState, config: MatchConfig): HudState {
     dragRatio: state.fisherman.drag / breakStrength,
     staminaRatio: state.fish.stamina / config.fish.maxStamina,
     balanceRatio: state.fisherman.balance / config.waterGun.maxBalance,
+    phase: state.phase,
+    countdown: state.countdown,
+    timeLeft: state.timeLeft,
+    outcome: state.outcome,
   };
 }

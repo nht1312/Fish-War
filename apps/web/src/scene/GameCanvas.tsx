@@ -6,6 +6,7 @@ import { useState } from "react";
 
 import { createSimRunner } from "../sim/simRunner";
 import { Dock } from "./Dock";
+import { EscapeZone } from "./EscapeZone";
 import { FishermanMesh } from "./FishermanMesh";
 import { FishingLine } from "./FishingLine";
 import { FishMesh } from "./FishMesh";
@@ -28,6 +29,7 @@ export default function GameCanvas() {
       <SimLoop runner={runner} />
       <Pond pond={runner.config.pond} />
       <Dock dock={runner.config.dock} />
+      <EscapeZone zone={runner.config.escapeZone} />
       <FishMesh runner={runner} />
       <FishermanMesh runner={runner} />
       <Rod runner={runner} />

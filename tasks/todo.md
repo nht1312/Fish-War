@@ -333,7 +333,7 @@ triggers the cooldown (a comedic whiff).
 **Files likely touched:** `packages/game-core/src/systems/net.ts` + test, `packages/game-core/src/{config,match}.ts`, `apps/web/src/scene/Net.tsx`, `apps/web/src/input/keyboard.ts`
 **Scope:** M
 
-### - [ ] Task 15: Match state — countdown, timer, escape zone, outcome, restart
+### - [x] Task 15: Match state — countdown, timer, escape zone, outcome, restart
 
 **Description:** Add `MatchState.phase: countdown | playing | ended`, with countdown
 seconds, a `matchDuration` timer, and an **escape zone** (a volume at the far pond

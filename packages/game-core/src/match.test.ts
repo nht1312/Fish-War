@@ -45,11 +45,84 @@ const IDLE: MatchInputs = {
   fisherman: { move: STILL, cast: false, dragChange: 0, dodge: false, net: false },
 };
 
+/** A fresh match with the countdown already over. */
+const inPlay = (): MatchState => ({ ...createMatch(DEFAULT_CONFIG), phase: "playing" });
+
+describe("match phases", () => {
+  const dt = 1 / DEFAULT_CONFIG.tickRate;
+  const { match: MATCH } = DEFAULT_CONFIG;
+  const swimRight: MatchInputs = { ...IDLE, fish: { ...IDLE.fish, move: { x: 1, z: 0 } } };
+
+  function run(state: MatchState, inputs: MatchInputs, seconds: number): MatchState {
+    let s = state;
+    for (let i = 0; i < Math.round(seconds / dt); i++) s = stepMatch(s, inputs, DEFAULT_CONFIG, dt);
+    return s;
+  }
+
+  it("starts in the countdown with the full match time left", () => {
+    const state = createMatch(DEFAULT_CONFIG);
+    expect(state.phase).toBe("countdown");
+    expect(state.countdown).toBe(MATCH.countdownSeconds);
+    expect(state.timeLeft).toBe(MATCH.durationSeconds);
+  });
+
+  it("ignores inputs during the countdown", () => {
+    const start = createMatch(DEFAULT_CONFIG);
+    const later = run(start, swimRight, MATCH.countdownSeconds / 2);
+    expect(later.phase).toBe("countdown");
+    expect(later.fish.position.x).toBe(start.fish.position.x);
+    expect(later.timeLeft).toBe(MATCH.durationSeconds);
+  });
+
+  it("starts play when the countdown runs out", () => {
+    const later = run(createMatch(DEFAULT_CONFIG), IDLE, MATCH.countdownSeconds + dt);
+    expect(later.phase).toBe("playing");
+  });
+
+  it("counts the match timer down during play", () => {
+    const later = run(inPlay(), IDLE, 1);
+    expect(later.timeLeft).toBeCloseTo(MATCH.durationSeconds - 1);
+  });
+
+  it("gives the fish the win when the timer expires", () => {
+    const nearlyOver: MatchState = { ...inPlay(), timeLeft: dt / 2 };
+    const ended = stepMatch(nearlyOver, IDLE, DEFAULT_CONFIG, dt);
+    expect(ended.phase).toBe("ended");
+    expect(ended.timeLeft).toBe(0);
+    expect(ended.outcome).toEqual({ winner: "fish", reason: "timeout" });
+  });
+
+  it("freezes once the match has ended", () => {
+    const ended: MatchState = { ...inPlay(), phase: "ended", outcome: { winner: "fish", reason: "timeout" } };
+    expect(stepMatch(ended, swimRight, DEFAULT_CONFIG, dt)).toBe(ended);
+  });
+
+  it("lets a free fish escape through the escape zone", () => {
+    const { center } = DEFAULT_CONFIG.escapeZone;
+    const start = inPlay();
+    const atExit = { ...start, fish: { ...start.fish, position: { x: center.x, y: 0, z: center.z } } };
+    const next = stepMatch(atExit, IDLE, DEFAULT_CONFIG, dt);
+    expect(next.outcome).toEqual({ winner: "fish", reason: "fish-escaped" });
+    expect(next.phase).toBe("ended");
+  });
+
+  it("a hooked fish cannot escape", () => {
+    const { center } = DEFAULT_CONFIG.escapeZone;
+    const start = inPlay();
+    const hookedAtExit: MatchState = {
+      ...start,
+      fish: { ...start.fish, position: { x: center.x, y: 0, z: center.z } },
+      line: { phase: "hooked", length: 35, tension: 0, overTensionTime: 0 },
+    };
+    expect(stepMatch(hookedAtExit, IDLE, DEFAULT_CONFIG, dt).outcome).toBeNull();
+  });
+});
+
 describe("stepMatch", () => {
   const dt = 1 / DEFAULT_CONFIG.tickRate;
 
   it("advances tick and time without mutating the input state", () => {
-    const start = createMatch(DEFAULT_CONFIG);
+    const start = inPlay();
     const next = stepMatch(start, IDLE, DEFAULT_CONFIG, dt);
 
     expect(next.tick).toBe(1);
@@ -58,7 +131,7 @@ describe("stepMatch", () => {
   });
 
   it("moves the fish and the fisherman independently in the same tick", () => {
-    const start = createMatch(DEFAULT_CONFIG);
+    const start = inPlay();
     const inputs: MatchInputs = {
       fish: { move: { x: 1, z: 0 }, dive: false, sprint: false, dash: false, shoot: false },
       fisherman: { move: { x: -1, z: 0 }, cast: false, dragChange: 0, dodge: false, net: false },
@@ -74,11 +147,11 @@ describe("stepMatch casting", () => {
   const pressCast: MatchInputs = { ...IDLE, fisherman: { move: STILL, cast: true, dragChange: 0, dodge: false, net: false } };
 
   it("starts with the line idle", () => {
-    expect(createMatch(DEFAULT_CONFIG).line).toEqual({ phase: "idle" });
+    expect(inPlay().line).toEqual({ phase: "idle" });
   });
 
   it("casts once per press, not every tick the button is held", () => {
-    const first = stepMatch(createMatch(DEFAULT_CONFIG), pressCast, DEFAULT_CONFIG, dt);
+    const first = stepMatch(inPlay(), pressCast, DEFAULT_CONFIG, dt);
     expect(first.line.phase).toBe("cast");
     expect(first.fisherman.castHeld).toBe(true);
 
@@ -104,7 +177,7 @@ describe("stepMatch hooked fish", () => {
     ticks: number,
     options: { drag?: number; reel?: boolean } = {},
   ): MatchState {
-    const start = createMatch(DEFAULT_CONFIG);
+    const start = inPlay();
     let state: MatchState = {
       ...start,
       line: HOOKED_12,
@@ -142,7 +215,7 @@ describe("stepMatch hooked fish", () => {
   });
 
   it("lets the fisherman win when the hooked fish runs out of stamina", () => {
-    const start = createMatch(DEFAULT_CONFIG);
+    const start = inPlay();
     let state: MatchState = { ...start, line: HOOKED_12, fish: { ...start.fish, stamina: 0.5 } };
     const sprintAway = { move: { x: 0, z: -1 }, dive: false, sprint: true, dash: false, shoot: false };
     for (let i = 0; i < 30 && state.outcome === null; i++) {
@@ -154,7 +227,7 @@ describe("stepMatch hooked fish", () => {
 
   it("a dash while hooked spikes the line tension", () => {
     const calm = runHooked(resting, 1, LOCKED_REEL);
-    const start = createMatch(DEFAULT_CONFIG);
+    const start = inPlay();
     const hooked: MatchState = {
       ...start,
       line: HOOKED_12,
@@ -168,14 +241,14 @@ describe("stepMatch hooked fish", () => {
   });
 
   it("adjusts drag from input, within limits", () => {
-    let state = createMatch(DEFAULT_CONFIG);
+    let state = inPlay();
     const tighten: MatchInputs = { ...IDLE, fisherman: { ...IDLE.fisherman, dragChange: 1 } };
     for (let i = 0; i < 30 * 10; i++) state = stepMatch(state, tighten, DEFAULT_CONFIG, dt);
     expect(state.fisherman.drag).toBe(DEFAULT_CONFIG.reel.maxDrag);
   });
 
   it("starts with no outcome", () => {
-    expect(createMatch(DEFAULT_CONFIG).outcome).toBeNull();
+    expect(inPlay().outcome).toBeNull();
   });
 
   it("snaps the line and lets the fish win when it pulls hard for long enough", () => {
@@ -197,7 +270,7 @@ describe("stepMatch hooked fish", () => {
   });
 
   it("keeps a hooked fish within the line length while it swims away", () => {
-    const start = createMatch(DEFAULT_CONFIG);
+    const start = inPlay();
     const hooked = { ...start, line: HOOKED_12 };
     const fleeing: MatchInputs = { ...IDLE, fish: { move: { x: 0.3, z: -1 }, dive: false, sprint: false, dash: false, shoot: false } };
 
@@ -217,11 +290,11 @@ describe("stepMatch stamina", () => {
   const sprint = { move: { x: 1, z: 0 }, dive: false, sprint: true, dash: false, shoot: false };
 
   it("starts the fish at full stamina", () => {
-    expect(createMatch(DEFAULT_CONFIG).fish.stamina).toBe(DEFAULT_CONFIG.fish.maxStamina);
+    expect(inPlay().fish.stamina).toBe(DEFAULT_CONFIG.fish.maxStamina);
   });
 
   it("sprinting makes the fish faster than its swim speed and costs stamina", () => {
-    let state = createMatch(DEFAULT_CONFIG);
+    let state = inPlay();
     for (let i = 0; i < 15; i++) state = stepMatch(state, { ...IDLE, fish: sprint }, DEFAULT_CONFIG, dt);
     expect(Math.hypot(state.fish.velocity.x, state.fish.velocity.z)).toBeGreaterThan(
       DEFAULT_CONFIG.fish.swimSpeed,
@@ -230,7 +303,7 @@ describe("stepMatch stamina", () => {
   });
 
   it("running out of stamina while free just stops the sprint, with no outcome", () => {
-    const start = createMatch(DEFAULT_CONFIG);
+    const start = inPlay();
     let state: MatchState = { ...start, fish: { ...start.fish, stamina: 0.2 } };
     for (let i = 0; i < 10; i++) state = stepMatch(state, { ...IDLE, fish: sprint }, DEFAULT_CONFIG, dt);
     expect(state.outcome).toBeNull();
@@ -241,13 +314,13 @@ describe("stepMatch water gun", () => {
   const dt = 1 / DEFAULT_CONFIG.tickRate;
 
   it("starts with no shots in the air and the fisherman steady", () => {
-    const state = createMatch(DEFAULT_CONFIG);
+    const state = inPlay();
     expect(state.projectiles).toEqual([]);
     expect(state.fisherman.balance).toBe(DEFAULT_CONFIG.waterGun.maxBalance);
   });
 
   it("knocks the fisherman out when his balance runs out: Fish wins", () => {
-    const start = createMatch(DEFAULT_CONFIG);
+    const start = inPlay();
     const surfaced = { ...start.fish, position: { x: 0, y: 0, z: 5 } };
     let state: MatchState = {
       ...start,
@@ -264,7 +337,7 @@ describe("stepMatch water gun", () => {
   });
 
   it("a dodging fisherman is not hit by a shot passing through him", () => {
-    const start = createMatch(DEFAULT_CONFIG);
+    const start = inPlay();
     const target = fishermanTarget(start.fisherman, DEFAULT_CONFIG);
     const shot = { position: target, velocity: { x: 0, y: 0, z: 0 }, age: 0 };
     const dodging: MatchState = {
@@ -277,7 +350,7 @@ describe("stepMatch water gun", () => {
   });
 
   it("a dodge never carries the fisherman off the dock", () => {
-    const start = createMatch(DEFAULT_CONFIG);
+    const start = inPlay();
     const { dock } = DEFAULT_CONFIG;
     const atEdge: MatchState = {
       ...start,
@@ -290,7 +363,7 @@ describe("stepMatch water gun", () => {
   });
 
   it("a staggered fisherman cannot reel", () => {
-    const start = createMatch(DEFAULT_CONFIG);
+    const start = inPlay();
     const hooked: MatchState = {
       ...start,
       line: HOOKED_12,
@@ -306,7 +379,7 @@ describe("stepMatch net", () => {
   const dt = 1 / DEFAULT_CONFIG.tickRate;
 
   it("netting a fish near the dock wins the match for the fisherman", () => {
-    const start = createMatch(DEFAULT_CONFIG);
+    const start = inPlay();
     const { position } = start.fisherman;
     const closeFish = { ...start.fish, position: { x: position.x, y: 0, z: position.z - 2 } };
     const netting: MatchInputs = { ...IDLE, fisherman: { ...IDLE.fisherman, net: true } };
@@ -315,7 +388,7 @@ describe("stepMatch net", () => {
   });
 
   it("a whiff leaves the match undecided", () => {
-    const start = createMatch(DEFAULT_CONFIG);
+    const start = inPlay();
     const netting: MatchInputs = { ...IDLE, fisherman: { ...IDLE.fisherman, net: true } };
     const next = stepMatch(start, netting, DEFAULT_CONFIG, dt);
     expect(next.outcome).toBeNull();
@@ -325,7 +398,7 @@ describe("stepMatch net", () => {
 
 describe("MatchState", () => {
   it("is plain JSON data", () => {
-    const state = createMatch(DEFAULT_CONFIG);
+    const state = inPlay();
     expect(JSON.parse(JSON.stringify(state))).toEqual(state);
   });
 });

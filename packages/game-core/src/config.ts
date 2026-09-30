@@ -140,6 +140,20 @@ export interface NetConfig {
   readonly swingSeconds: number;
 }
 
+export interface MatchRulesConfig {
+  /** Seconds of countdown before play starts. */
+  readonly countdownSeconds: number;
+  /** Seconds of play; the fish wins if it survives them. */
+  readonly durationSeconds: number;
+}
+
+/** Where a free fish escapes: an axis-aligned strip at the far edge of the pond. */
+export interface EscapeZoneConfig {
+  readonly center: Vec3;
+  readonly halfWidth: number;
+  readonly halfLength: number;
+}
+
 /** Every gameplay tuning value. Passed in, never hard-coded in systems. */
 export interface MatchConfig {
   /** Simulation ticks per second. */
@@ -156,6 +170,8 @@ export interface MatchConfig {
   readonly reel: ReelConfig;
   readonly waterGun: WaterGunConfig;
   readonly net: NetConfig;
+  readonly match: MatchRulesConfig;
+  readonly escapeZone: EscapeZoneConfig;
   readonly fishSpawn: Vec3;
   readonly fishermanSpawn: Vec3;
 }
@@ -172,6 +188,9 @@ const DOCK: DockConfig = {
   height: DOCK_HEIGHT,
   center: { x: 0, y: 0, z: POND.length / 2 + DOCK_LENGTH / 2 },
 };
+
+/** The escape zone runs this far in from the far pond edge, times two (m). */
+const ESCAPE_ZONE_HALF_LENGTH = 1.5;
 
 /** Spawn the fish just below the surface in the middle of the pond. */
 const FISH_SPAWN_DEPTH = 0.4;
@@ -239,6 +258,12 @@ export const DEFAULT_CONFIG: MatchConfig = {
     staggerSeconds: 0.6,
   },
   net: { range: 3.5, maxDepth: 0.8, cooldown: 2, swingSeconds: 0.4 },
+  match: { countdownSeconds: 3, durationSeconds: 120 },
+  escapeZone: {
+    center: { x: 0, y: 0, z: -POND.length / 2 + ESCAPE_ZONE_HALF_LENGTH },
+    halfWidth: 4,
+    halfLength: ESCAPE_ZONE_HALF_LENGTH,
+  },
   fishSpawn: { x: 0, y: -FISH_SPAWN_DEPTH, z: 0 },
   fishermanSpawn: { x: DOCK.center.x, y: DOCK.height, z: DOCK.center.z },
 };

@@ -19,10 +19,12 @@ export { advanceClock, type ClockAdvance } from "./clock";
 export {
   DEFAULT_CONFIG,
   type DockConfig,
+  type EscapeZoneConfig,
   type FishConfig,
   type FishermanConfig,
   type LineConfig,
   type MatchConfig,
+  type MatchRulesConfig,
   type NetConfig,
   type PondConfig,
   type ReelConfig,
@@ -38,6 +40,7 @@ export { stepFishermanMovement } from "./systems/fishermanMovement";
 export { isAtSurface, stepFishMovement } from "./systems/fishMovement";
 export { castLandingPoint, constrainToLine, rodTipPosition, stepLine } from "./systems/line";
 export { stepNet, type NetStep } from "./systems/net";
+export { isInEscapeZone, NO_EVENTS, resolveOutcome, type OutcomeEvents } from "./systems/outcome";
 export { payOutLine, reelInLine, stepDrag } from "./systems/reel";
 export {
   effectiveSwimSpeed,

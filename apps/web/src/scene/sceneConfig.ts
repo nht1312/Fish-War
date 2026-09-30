@@ -61,6 +61,13 @@ export const SHOT_STYLE = {
   maxVisible: 8,
 } as const;
 
+export const ESCAPE_ZONE_STYLE = {
+  color: "#80ed99",
+  opacity: 0.45,
+  /** Just above the water so the zone is not hidden by it (m). */
+  heightAboveWater: 0.02,
+} as const;
+
 export const NET_STYLE = {
   color: "#ffffff",
   /** Thickness of the reach ring drawn on the water (m). */

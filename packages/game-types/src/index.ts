@@ -92,7 +92,9 @@ export type OutcomeReason =
   | "line-broken"
   | "fish-exhausted"
   | "fisherman-knocked-out"
-  | "captured";
+  | "captured"
+  | "fish-escaped"
+  | "timeout";
 
 export interface MatchOutcome {
   readonly winner: Role;
@@ -133,6 +135,9 @@ export interface MatchInputs {
   readonly fisherman: FishermanInput;
 }
 
+/** Countdown before play, live play, then frozen once someone has won. */
+export type MatchPhase = "countdown" | "playing" | "ended";
+
 /**
  * The full simulation state of one match. Plain JSON data only (no classes,
  * Maps, or functions) so it can later be sent over the network unchanged.
@@ -141,6 +146,11 @@ export interface MatchState {
   readonly tick: number;
   /** Simulated seconds since the match was created. */
   readonly time: number;
+  readonly phase: MatchPhase;
+  /** Seconds left before play starts. */
+  readonly countdown: number;
+  /** Seconds of play left; at 0 the fish wins by timeout. */
+  readonly timeLeft: number;
   readonly fish: FishState;
   readonly fisherman: FishermanState;
   readonly line: LineState;

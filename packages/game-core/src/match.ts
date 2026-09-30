@@ -1,4 +1,4 @@
-import type { MatchInputs, MatchOutcome, MatchState } from "@fishwar/game-types";
+import type { MatchInputs, MatchState } from "@fishwar/game-types";
 
 import type { MatchConfig } from "./config";
 import { stepFishermanMovement } from "./systems/fishermanMovement";
@@ -8,17 +8,21 @@ import { stepDodge } from "./systems/dodge";
 import { stepHookedFight } from "./systems/fight";
 import { rodTipPosition, stepLine } from "./systems/line";
 import { stepNet } from "./systems/net";
+import { isInEscapeZone, resolveOutcome, type OutcomeEvents } from "./systems/outcome";
 import { stepDrag } from "./systems/reel";
 import { isSprinting, stepStamina } from "./systems/stamina";
 import { stepWaterGun } from "./systems/waterGun";
 
 const AT_REST = { x: 0, y: 0, z: 0 } as const;
 
-/** Build the initial state of a match from its config. */
+/** Build the initial state of a match from its config, at the start of the countdown. */
 export function createMatch(config: MatchConfig): MatchState {
   return {
     tick: 0,
     time: 0,
+    phase: "countdown",
+    countdown: config.match.countdownSeconds,
+    timeLeft: config.match.durationSeconds,
     fish: {
       position: config.fishSpawn,
       velocity: AT_REST,
@@ -46,20 +50,13 @@ export function createMatch(config: MatchConfig): MatchState {
   };
 }
 
-const FISH_EXHAUSTED: MatchOutcome = { winner: "fisherman", reason: "fish-exhausted" };
-const FISHERMAN_KNOCKED_OUT: MatchOutcome = { winner: "fish", reason: "fisherman-knocked-out" };
-const CAPTURED: MatchOutcome = { winner: "fisherman", reason: "captured" };
+interface PlayStep {
+  readonly world: Pick<MatchState, "fish" | "fisherman" | "line" | "projectiles">;
+  readonly events: Omit<OutcomeEvents, "timeExpired">;
+}
 
-/**
- * Advance the match by one fixed tick of `dt` seconds. Pure: returns a new
- * state and never mutates its input. Gameplay systems are composed in here.
- */
-export function stepMatch(
-  state: MatchState,
-  inputs: MatchInputs,
-  config: MatchConfig,
-  dt: number,
-): MatchState {
+/** One tick of live play: every gameplay system, composed. Reports what happened. */
+function stepPlay(state: MatchState, inputs: MatchInputs, config: MatchConfig, dt: number): PlayStep {
   const walked = stepDodge(
     stepFishermanMovement(state.fisherman, inputs.fisherman, config, dt),
     inputs.fisherman,
@@ -92,31 +89,65 @@ export function stepMatch(
           config,
           dt,
         )
-      : { line: castLine, fish: swum, outcome: null };
+      : { line: castLine, fish: swum, lineBroken: false };
 
   const line = dash.dashed ? applyTensionSpike(fight.line, config) : fight.line;
+  const hooked = line.phase === "hooked";
   const stamina = stepStamina(
     fight.fish.stamina,
-    {
-      sprinting: isSprinting(state.fish, inputs.fish),
-      tension: line.phase === "hooked" ? line.tension : 0,
-    },
+    { sprinting: isSprinting(state.fish, inputs.fish), tension: hooked ? line.tension : 0 },
     config,
     dt,
   );
-  const exhausted = line.phase === "hooked" && stamina === 0 ? FISH_EXHAUSTED : null;
-  const knockedOut = water.knockedOut ? FISHERMAN_KNOCKED_OUT : null;
   const net = stepNet(fisherman, fight.fish, inputs.fisherman, config, dt);
-  const captured = net.captured ? CAPTURED : null;
+  const fish = { ...fight.fish, stamina };
 
   return {
+    world: {
+      fish,
+      line,
+      projectiles: water.projectiles,
+      fisherman: { ...net.fisherman, castHeld: inputs.fisherman.cast },
+    },
+    events: {
+      captured: net.captured,
+      fishExhausted: hooked && stamina === 0,
+      lineBroken: fight.lineBroken,
+      fishermanKnockedOut: water.knockedOut,
+      fishEscaped: !hooked && isInEscapeZone(fish.position, config),
+    },
+  };
+}
+
+/**
+ * Advance the match by one fixed tick of `dt` seconds. Pure: returns a new
+ * state and never mutates its input. Countdown: only the clock runs and inputs
+ * are ignored. Playing: every system runs, the timer counts down, and any win
+ * condition ends the match. Ended: the state is frozen.
+ */
+export function stepMatch(
+  state: MatchState,
+  inputs: MatchInputs,
+  config: MatchConfig,
+  dt: number,
+): MatchState {
+  if (state.phase === "ended") return state;
+
+  const clock = { tick: state.tick + 1, time: state.time + dt };
+  if (state.phase === "countdown") {
+    const countdown = Math.max(state.countdown - dt, 0);
+    return { ...state, ...clock, countdown, phase: countdown > 0 ? "countdown" : "playing" };
+  }
+
+  const { world, events } = stepPlay(state, inputs, config, dt);
+  const timeLeft = Math.max(state.timeLeft - dt, 0);
+  const outcome = resolveOutcome({ ...events, timeExpired: timeLeft === 0 });
+  return {
     ...state,
-    tick: state.tick + 1,
-    time: state.time + dt,
-    fish: { ...fight.fish, stamina },
-    line,
-    projectiles: water.projectiles,
-    fisherman: { ...net.fisherman, castHeld: inputs.fisherman.cast },
-    outcome: state.outcome ?? fight.outcome ?? exhausted ?? knockedOut ?? captured,
+    ...clock,
+    ...world,
+    timeLeft,
+    outcome,
+    phase: outcome ? "ended" : "playing",
   };
 }
