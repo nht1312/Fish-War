@@ -49,6 +49,11 @@ export interface RodConfig {
   readonly castDistance: number;
 }
 
+export interface LineConfig {
+  /** A fish this close (3D) to a cast hook gets hooked (m). */
+  readonly hookRadius: number;
+}
+
 /** Every gameplay tuning value. Passed in, never hard-coded in systems. */
 export interface MatchConfig {
   /** Simulation ticks per second. */
@@ -60,6 +65,7 @@ export interface MatchConfig {
   readonly fish: FishConfig;
   readonly fisherman: FishermanConfig;
   readonly rod: RodConfig;
+  readonly line: LineConfig;
   readonly fishSpawn: Vec3;
   readonly fishermanSpawn: Vec3;
 }
@@ -95,6 +101,7 @@ export const DEFAULT_CONFIG: MatchConfig = {
   },
   fisherman: { moveSpeed: 4, acceleration: 25, deceleration: 25, spawnYaw: Math.PI },
   rod: { tipHeight: 2.2, tipReach: 1.2, castDistance: 12 },
+  line: { hookRadius: 1 },
   fishSpawn: { x: 0, y: -FISH_SPAWN_DEPTH, z: 0 },
   fishermanSpawn: { x: DOCK.center.x, y: DOCK.height, z: DOCK.center.z },
 };

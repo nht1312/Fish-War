@@ -9,7 +9,7 @@ import { LINE_STYLE } from "./sceneConfig";
 const SEGMENT_POINTS = 2;
 const XYZ = 3;
 
-/** A straight line from the rod tip to the hook, plus a bobber, while cast. */
+/** A straight line from the rod tip to the bobber (cast) or the fish (hooked). */
 export function FishingLine({ runner }: { runner: SimRunner }) {
   const bobber = useRef<Mesh>(null);
   const line = useMemo(() => {
@@ -34,18 +34,18 @@ export function FishingLine({ runner }: { runner: SimRunner }) {
 
   useFrame(() => {
     const state = runner.getState();
-    const isCast = state.line.phase === "cast";
-    line.visible = isCast;
-    if (bobber.current) bobber.current.visible = isCast;
-    if (state.line.phase !== "cast") return;
+    line.visible = state.line.phase !== "idle";
+    if (bobber.current) bobber.current.visible = state.line.phase === "cast";
+    if (state.line.phase === "idle") return;
 
+    // Cast: the line ends at the bobber. Hooked: it ends at the fish.
+    const end = state.line.phase === "cast" ? state.line.hookPosition : state.fish.position;
     const tip = rodTipPosition(state.fisherman, runner.config);
-    const hook = state.line.hookPosition;
     const positions = line.geometry.getAttribute("position");
     positions.setXYZ(0, tip.x, tip.y, tip.z);
-    positions.setXYZ(1, hook.x, hook.y, hook.z);
+    positions.setXYZ(1, end.x, end.y, end.z);
     positions.needsUpdate = true;
-    bobber.current?.position.set(hook.x, hook.y, hook.z);
+    bobber.current?.position.set(end.x, end.y, end.z);
   });
 
   return (

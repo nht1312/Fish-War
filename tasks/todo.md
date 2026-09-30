@@ -147,7 +147,7 @@ from the rod tip to the hook.
 **Files likely touched:** `packages/game-types/src/index.ts`, `packages/game-core/src/systems/line.ts` + test, `packages/game-core/src/config.ts`, `apps/web/src/scene/{Rod,FishingLine}.tsx`
 **Scope:** M
 
-### - [ ] Task 7: Fish gets hooked; line length constrains the fish
+### - [x] Task 7: Fish gets hooked; line length constrains the fish
 
 **Description:** In phase `cast`, a fish that enters `hookRadius` of the hook becomes
 `hooked` (see Open Question 2). While hooked, the line runs from the rod tip to the

@@ -76,7 +76,7 @@ the simulation's shape is real.
 
 ### Phase 2 — Rod & line
 - [x] 6. Fisherman aims and casts the rod
-- [ ] 7. Fish gets hooked; line length constrains the fish
+- [x] 7. Fish gets hooked; line length constrains the fish
 - [ ] 8. Line tension and line break (HUD tension bar)
 - [ ] 9. Reel and drag
 - **Checkpoint B** — the fight on the line is playable

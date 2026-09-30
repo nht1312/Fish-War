@@ -1,4 +1,10 @@
-import type { FishermanInput, FishermanState, LineState, Vec3 } from "@fishwar/game-types";
+import type {
+  FishermanInput,
+  FishermanState,
+  FishState,
+  LineState,
+  Vec3,
+} from "@fishwar/game-types";
 
 import type { MatchConfig } from "../config";
 import { clamp } from "../math";
@@ -36,24 +42,68 @@ export function castLandingPoint(fisherman: FishermanState, config: MatchConfig)
 }
 
 /**
- * Cast / retrieve on a fresh press of the cast button. `fisherman.castHeld` is
- * last tick's button state, so holding the button does not repeat the action.
+ * Line phase transitions. A fresh press of the cast button (`fisherman.castHeld`
+ * is last tick's button state, so a hold does not repeat) casts while idle and
+ * retrieves while cast. A fish within hookRadius of a cast hook gets hooked.
  */
 export function stepLine(
   line: LineState,
   fisherman: FishermanState,
+  fish: FishState,
   input: FishermanInput,
   config: MatchConfig,
 ): LineState {
   const pressed = input.cast && !fisherman.castHeld;
-  if (!pressed) return line;
 
-  if (line.phase === "cast") return { phase: "idle" };
+  switch (line.phase) {
+    case "idle": {
+      if (!pressed) return line;
+      const hookPosition = castLandingPoint(fisherman, config);
+      return {
+        phase: "cast",
+        hookPosition,
+        length: distance(rodTipPosition(fisherman, config), hookPosition),
+      };
+    }
+    case "cast":
+      if (pressed) return { phase: "idle" };
+      if (distance(fish.position, line.hookPosition) <= config.line.hookRadius) {
+        const length = distance(rodTipPosition(fisherman, config), fish.position);
+        return { phase: "hooked", length };
+      }
+      return line;
+    case "hooked":
+      return line;
+  }
+}
 
-  const hookPosition = castLandingPoint(fisherman, config);
+/**
+ * Keep a hooked fish within `length` of the rod tip. The fish is pulled back
+ * horizontally at its current depth (pulling straight at the tip, which is
+ * above the water, would lift it out), and velocity away from the rod is
+ * removed so it slides along the line's reach instead of fighting it.
+ */
+export function constrainToLine(fish: FishState, tip: Vec3, length: number): FishState {
+  const dx = fish.position.x - tip.x;
+  const dy = fish.position.y - tip.y;
+  const dz = fish.position.z - tip.z;
+  if (Math.hypot(dx, dy, dz) <= length) return fish;
+
+  const horizontal = Math.hypot(dx, dz);
+  if (horizontal === 0) return fish;
+
+  const reach = Math.sqrt(Math.max(length * length - dy * dy, 0));
+  const ux = dx / horizontal;
+  const uz = dz / horizontal;
+  const outward = Math.max(fish.velocity.x * ux + fish.velocity.z * uz, 0);
+
   return {
-    phase: "cast",
-    hookPosition,
-    length: distance(rodTipPosition(fisherman, config), hookPosition),
+    ...fish,
+    position: { x: tip.x + ux * reach, y: fish.position.y, z: tip.z + uz * reach },
+    velocity: {
+      x: fish.velocity.x - outward * ux,
+      y: fish.velocity.y,
+      z: fish.velocity.z - outward * uz,
+    },
   };
 }

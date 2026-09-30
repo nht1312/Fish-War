@@ -1,8 +1,9 @@
-import type { MatchInputs } from "@fishwar/game-types";
+import type { MatchInputs, MatchState } from "@fishwar/game-types";
 import { describe, expect, it } from "vitest";
 
 import { DEFAULT_CONFIG, type MatchConfig } from "./config";
 import { createMatch, stepMatch } from "./match";
+import { rodTipPosition } from "./systems/line";
 
 describe("createMatch", () => {
   const state = createMatch(DEFAULT_CONFIG);
@@ -86,6 +87,23 @@ describe("stepMatch casting", () => {
     const released = stepMatch(held, IDLE, DEFAULT_CONFIG, dt);
     const retrieved = stepMatch(released, pressCast, DEFAULT_CONFIG, dt);
     expect(retrieved.line.phase).toBe("idle");
+  });
+});
+
+describe("stepMatch hooked fish", () => {
+  const dt = 1 / DEFAULT_CONFIG.tickRate;
+
+  it("keeps a hooked fish within the line length while it swims away", () => {
+    const start = createMatch(DEFAULT_CONFIG);
+    const hooked = { ...start, line: { phase: "hooked" as const, length: 12 } };
+    const fleeing: MatchInputs = { ...IDLE, fish: { move: { x: 0.3, z: -1 }, dive: false } };
+
+    let state: MatchState = hooked;
+    for (let i = 0; i < 300; i++) state = stepMatch(state, fleeing, DEFAULT_CONFIG, dt);
+
+    const tip = rodTipPosition(state.fisherman, DEFAULT_CONFIG);
+    const { x, y, z } = state.fish.position;
+    expect(Math.hypot(x - tip.x, y - tip.y, z - tip.z)).toBeLessThanOrEqual(12 + 1e-9);
   });
 });
 

@@ -44,11 +44,13 @@ export interface FishermanState {
 
 /**
  * The fishing line. Idle: reeled in at the rod. Cast: the hook sits in the
- * water where it landed, `length` metres of line from the rod tip.
+ * water where it landed, `length` metres of line from the rod tip. Hooked: the
+ * fish is on the line and can be at most `length` metres from the rod tip.
  */
 export type LineState =
   | { readonly phase: "idle" }
-  | { readonly phase: "cast"; readonly hookPosition: Vec3; readonly length: number };
+  | { readonly phase: "cast"; readonly hookPosition: Vec3; readonly length: number }
+  | { readonly phase: "hooked"; readonly length: number };
 
 /** What the fish player wants to do this tick. Intent only, never results. */
 export interface FishInput {
