@@ -389,7 +389,7 @@ anything malformed, never throw, and use no schema-library dependency.
 **Files likely touched:** `packages/game-types/src/protocol.ts`, `packages/game-types/src/index.ts`, `packages/game-core/src/protocol.ts` + test, `packages/game-core/src/index.ts`
 **Scope:** S–M
 
-### - [ ] Task 17: Server room with an authoritative tick
+### - [x] Task 17: Server room with an authoritative tick
 
 **Description:** Pure room logic in `apps/game-server/src/room.ts`:
 - `join`: the first seat is Fish, the second is Fisherman, and a third join is refused.

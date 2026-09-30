@@ -115,7 +115,7 @@ re-planned in detail at Checkpoint D; Phase 6 stays coarse until Checkpoint E.
 
 ### Phase 5 — Multiplayer (re-planned at Checkpoint D)
 - [x] 16. Protocol types and message parsing
-- [ ] 17. Server room: two seats, authoritative tick, snapshots
+- [x] 17. Server room: two seats, authoritative tick, snapshots
 - [ ] 18. Client online mode: send own input, render server snapshots
 - [ ] 19. Server hardening: input ordering, rate and size limits
 - [ ] 20. Snapshot interpolation
