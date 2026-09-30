@@ -41,6 +41,8 @@ export interface FishermanState {
 export interface FishInput {
   /** Desired swim direction; magnitude above 1 is normalised. */
   readonly move: HorizontalVec;
+  /** Held to swim down; released, the fish rises back to the surface. */
+  readonly dive: boolean;
 }
 
 /** Every player's intent for one tick. */

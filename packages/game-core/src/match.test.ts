@@ -37,7 +37,7 @@ describe("createMatch", () => {
   });
 });
 
-const IDLE: MatchInputs = { fish: { move: { x: 0, z: 0 } } };
+const IDLE: MatchInputs = { fish: { move: { x: 0, z: 0 }, dive: false } };
 
 describe("stepMatch", () => {
   const dt = 1 / DEFAULT_CONFIG.tickRate;
@@ -53,7 +53,7 @@ describe("stepMatch", () => {
 
   it("moves the fish from its input", () => {
     const start = createMatch(DEFAULT_CONFIG);
-    const next = stepMatch(start, { fish: { move: { x: 1, z: 0 } } }, DEFAULT_CONFIG, dt);
+    const next = stepMatch(start, { fish: { move: { x: 1, z: 0 }, dive: false } }, DEFAULT_CONFIG, dt);
     expect(next.fish.position.x).toBeGreaterThan(start.fish.position.x);
   });
 });

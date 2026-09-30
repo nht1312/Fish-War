@@ -23,6 +23,12 @@ export interface FishConfig {
   readonly acceleration: number;
   /** How fast the fish glides to a stop without input (m/s²). */
   readonly deceleration: number;
+  /** Downward speed while diving (m/s). */
+  readonly diveSpeed: number;
+  /** Upward speed back to the surface when not diving (m/s). */
+  readonly surfaceSpeed: number;
+  /** How far below y = 0 the fish still counts as at the surface (m). */
+  readonly surfaceTolerance: number;
 }
 
 /** Every gameplay tuning value. Passed in, never hard-coded in systems. */
@@ -59,7 +65,14 @@ export const DEFAULT_CONFIG: MatchConfig = {
   maxTicksPerFrame: 5,
   pond: POND,
   dock: DOCK,
-  fish: { swimSpeed: 6, acceleration: 20, deceleration: 10 },
+  fish: {
+    swimSpeed: 6,
+    acceleration: 20,
+    deceleration: 10,
+    diveSpeed: 3,
+    surfaceSpeed: 2,
+    surfaceTolerance: 0.1,
+  },
   fishSpawn: { x: 0, y: -FISH_SPAWN_DEPTH, z: 0 },
   fishermanSpawn: { x: DOCK.center.x, y: DOCK.height, z: DOCK.center.z },
 };

@@ -24,4 +24,4 @@ export {
   type PondConfig,
 } from "./config";
 export { createMatch, stepMatch } from "./match";
-export { stepFishMovement } from "./systems/fishMovement";
+export { isAtSurface, stepFishMovement } from "./systems/fishMovement";

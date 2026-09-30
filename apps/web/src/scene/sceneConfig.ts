@@ -5,7 +5,8 @@
 
 export const POND_STYLE = {
   waterColor: "#2f7fb8",
-  waterOpacity: 0.7,
+  // See-through enough to follow the fish when it dives.
+  waterOpacity: 0.55,
   floorColor: "#1c3b4a",
 } as const;
 

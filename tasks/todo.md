@@ -78,7 +78,7 @@ direction.
 **Files likely touched:** `packages/game-core/src/systems/fishMovement.ts` + test, `packages/game-core/src/{config,match}.ts`, `apps/web/src/input/keyboard.ts`, `apps/web/src/scene/FishMesh.tsx`
 **Scope:** M
 
-### - [ ] Task 4: Fish dives and surfaces
+### - [x] Task 4: Fish dives and surfaces
 
 **Description:** Holding `C` moves the fish down toward `-POND_DEPTH` at dive speed,
 and releasing it lets the fish rise back to the surface. Y is always clamped to
