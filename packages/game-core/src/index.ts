@@ -21,3 +21,7 @@ export function clamp(value: number, min: number, max: number): number {
 export function opponentOf(role: Role): Role {
   return role === "fish" ? "fisherman" : "fish";
 }
+
+export { advanceClock, type ClockAdvance } from "./clock";
+export { DEFAULT_CONFIG, type DockConfig, type MatchConfig, type PondConfig } from "./config";
+export { createMatch, stepMatch } from "./match";

@@ -35,7 +35,7 @@ fisherman mesh, lights, and a fixed camera. The canvas loads client-only.
 **Files likely touched:** `apps/web/package.json`, `apps/web/app/page.tsx`, `apps/web/src/scene/{GameCanvas,GameCanvasLoader}.tsx`, `apps/web/src/scene/sceneConfig.ts`, `apps/web/src/scene/{Pond,Dock,FishMesh,FishermanMesh}.tsx`
 **Scope:** M
 
-### - [ ] Task 2: Fixed-tick simulation drives the scene
+### - [x] Task 2: Fixed-tick simulation drives the scene
 
 **Description:** Introduce the pure simulation skeleton and wire it to rendering.
 `game-types` gets `Vec3`, `FishState`, `FishermanState`, `MatchState`, `FishInput`,

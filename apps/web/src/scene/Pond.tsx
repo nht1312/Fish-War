@@ -1,18 +1,24 @@
-import { POND } from "./sceneConfig";
+import type { PondConfig } from "@fishwar/game-core";
+
+import { POND_STYLE } from "./sceneConfig";
 
 const FLAT = -Math.PI / 2;
 
 /** Water surface at y = 0 plus a pond floor at -depth. */
-export function Pond() {
+export function Pond({ pond }: { pond: PondConfig }) {
   return (
     <group>
-      <mesh rotation-x={FLAT} position-y={-POND.depth}>
-        <planeGeometry args={[POND.width, POND.length]} />
-        <meshStandardMaterial color={POND.floorColor} />
+      <mesh rotation-x={FLAT} position-y={-pond.depth}>
+        <planeGeometry args={[pond.width, pond.length]} />
+        <meshStandardMaterial color={POND_STYLE.floorColor} />
       </mesh>
       <mesh rotation-x={FLAT}>
-        <planeGeometry args={[POND.width, POND.length]} />
-        <meshStandardMaterial color={POND.waterColor} transparent opacity={POND.waterOpacity} />
+        <planeGeometry args={[pond.width, pond.length]} />
+        <meshStandardMaterial
+          color={POND_STYLE.waterColor}
+          transparent
+          opacity={POND_STYLE.waterOpacity}
+        />
       </mesh>
     </group>
   );
