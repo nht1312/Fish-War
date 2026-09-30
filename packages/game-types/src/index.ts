@@ -18,14 +18,34 @@ export interface Vec3 {
   readonly z: number;
 }
 
+/** A direction or velocity in the horizontal (XZ) plane. */
+export interface HorizontalVec {
+  readonly x: number;
+  readonly z: number;
+}
+
 export interface FishState {
   /** Centre of the fish's body. */
   readonly position: Vec3;
+  readonly velocity: Vec3;
+  /** Heading around the Y axis in radians; 0 faces +Z. */
+  readonly yaw: number;
 }
 
 export interface FishermanState {
   /** Where the fisherman's feet touch the dock. */
   readonly position: Vec3;
+}
+
+/** What the fish player wants to do this tick. Intent only, never results. */
+export interface FishInput {
+  /** Desired swim direction; magnitude above 1 is normalised. */
+  readonly move: HorizontalVec;
+}
+
+/** Every player's intent for one tick. */
+export interface MatchInputs {
+  readonly fish: FishInput;
 }
 
 /**

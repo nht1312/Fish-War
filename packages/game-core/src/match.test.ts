@@ -1,3 +1,4 @@
+import type { MatchInputs } from "@fishwar/game-types";
 import { describe, expect, it } from "vitest";
 
 import { DEFAULT_CONFIG, type MatchConfig } from "./config";
@@ -36,15 +37,24 @@ describe("createMatch", () => {
   });
 });
 
+const IDLE: MatchInputs = { fish: { move: { x: 0, z: 0 } } };
+
 describe("stepMatch", () => {
+  const dt = 1 / DEFAULT_CONFIG.tickRate;
+
   it("advances tick and time without mutating the input state", () => {
     const start = createMatch(DEFAULT_CONFIG);
-    const dt = 1 / DEFAULT_CONFIG.tickRate;
-    const next = stepMatch(start, dt);
+    const next = stepMatch(start, IDLE, DEFAULT_CONFIG, dt);
 
     expect(next.tick).toBe(1);
     expect(next.time).toBeCloseTo(dt);
     expect(start.tick).toBe(0);
+  });
+
+  it("moves the fish from its input", () => {
+    const start = createMatch(DEFAULT_CONFIG);
+    const next = stepMatch(start, { fish: { move: { x: 1, z: 0 } } }, DEFAULT_CONFIG, dt);
+    expect(next.fish.position.x).toBeGreaterThan(start.fish.position.x);
   });
 });
 

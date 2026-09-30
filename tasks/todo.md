@@ -17,7 +17,7 @@ Only task-specific checks are listed below.
 
 ### - [x] Task 1: Basic 3D scene renders
 
-**Description:** Add three and React Three Fiber, then render a static scene at `/`:
+**Description:** Add three and React Three Fiber, then render a static scene at `/`
 a pond (water plane), a dock/shore strip, a placeholder fish mesh, a placeholder
 fisherman mesh, lights, and a fixed camera. The canvas loads client-only.
 
@@ -58,7 +58,7 @@ sim runner, and meshes read positions from the sim state inside `useFrame`.
 **Files likely touched:** `packages/game-types/src/index.ts`, `packages/game-core/src/{config,match,clock}.ts` + tests, `apps/web/src/sim/simRunner.ts`, `apps/web/src/scene/GameCanvas.tsx`
 **Scope:** M
 
-### - [ ] Task 3: Fish swims horizontally
+### - [x] Task 3: Fish swims horizontally
 
 **Description:** Keyboard → `FishInput.move` (a 2D vector) → `fishMovement` system:
 velocity toward the input direction with acceleration and damping, capped at

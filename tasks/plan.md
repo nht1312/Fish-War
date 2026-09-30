@@ -69,7 +69,7 @@ the simulation's shape is real.
 ### Phase 1 — Scene & movement
 - [x] 1. Basic 3D scene renders
 - [x] 2. Fixed-tick simulation drives the scene
-- [ ] 3. Fish swims horizontally
+- [x] 3. Fish swims horizontally
 - [ ] 4. Fish dives and surfaces
 - [ ] 5. Fisherman moves on the dock
 - **Checkpoint A** — both avatars controllable

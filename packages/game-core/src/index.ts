@@ -9,19 +9,19 @@ import type { Role } from "@fishwar/game-types";
  * build on top of these in subsequent steps.
  */
 
-/** Clamp a value into the inclusive [min, max] range. */
-export function clamp(value: number, min: number, max: number): number {
-  if (min > max) {
-    throw new Error(`clamp: min (${min}) must be <= max (${max})`);
-  }
-  return Math.min(Math.max(value, min), max);
-}
-
 /** Return the opposing role. */
 export function opponentOf(role: Role): Role {
   return role === "fish" ? "fisherman" : "fish";
 }
 
+export { clamp } from "./math";
 export { advanceClock, type ClockAdvance } from "./clock";
-export { DEFAULT_CONFIG, type DockConfig, type MatchConfig, type PondConfig } from "./config";
+export {
+  DEFAULT_CONFIG,
+  type DockConfig,
+  type FishConfig,
+  type MatchConfig,
+  type PondConfig,
+} from "./config";
 export { createMatch, stepMatch } from "./match";
+export { stepFishMovement } from "./systems/fishMovement";

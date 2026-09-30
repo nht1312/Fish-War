@@ -16,6 +16,15 @@ export interface DockConfig {
   readonly center: Vec3;
 }
 
+export interface FishConfig {
+  /** Top horizontal swim speed (m/s). */
+  readonly swimSpeed: number;
+  /** How fast the fish speeds up toward its input (m/s²). */
+  readonly acceleration: number;
+  /** How fast the fish glides to a stop without input (m/s²). */
+  readonly deceleration: number;
+}
+
 /** Every gameplay tuning value. Passed in, never hard-coded in systems. */
 export interface MatchConfig {
   /** Simulation ticks per second. */
@@ -24,6 +33,7 @@ export interface MatchConfig {
   readonly maxTicksPerFrame: number;
   readonly pond: PondConfig;
   readonly dock: DockConfig;
+  readonly fish: FishConfig;
   readonly fishSpawn: Vec3;
   readonly fishermanSpawn: Vec3;
 }
@@ -49,6 +59,7 @@ export const DEFAULT_CONFIG: MatchConfig = {
   maxTicksPerFrame: 5,
   pond: POND,
   dock: DOCK,
+  fish: { swimSpeed: 6, acceleration: 20, deceleration: 10 },
   fishSpawn: { x: 0, y: -FISH_SPAWN_DEPTH, z: 0 },
   fishermanSpawn: { x: DOCK.center.x, y: DOCK.height, z: DOCK.center.z },
 };

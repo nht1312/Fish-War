@@ -1,23 +1,29 @@
 import { useFrame } from "@react-three/fiber";
 import { useRef } from "react";
-import type { Mesh } from "three";
+import type { Group } from "three";
 
 import type { SimRunner } from "../sim/simRunner";
 import { FISH_STYLE } from "./sceneConfig";
 
-/** Placeholder fish: a capsule lying along the Z axis, placed from sim state. */
+/**
+ * Placeholder fish, placed and turned from sim state. The outer group carries
+ * position and heading; the inner capsule is laid along the group's +Z axis.
+ */
 export function FishMesh({ runner }: { runner: SimRunner }) {
-  const ref = useRef<Mesh>(null);
+  const ref = useRef<Group>(null);
 
   useFrame(() => {
-    const { x, y, z } = runner.getState().fish.position;
-    ref.current?.position.set(x, y, z);
+    const { position, yaw } = runner.getState().fish;
+    ref.current?.position.set(position.x, position.y, position.z);
+    ref.current?.rotation.set(0, yaw, 0);
   });
 
   return (
-    <mesh ref={ref} rotation-x={Math.PI / 2}>
-      <capsuleGeometry args={[FISH_STYLE.bodyRadius, FISH_STYLE.bodyLength]} />
-      <meshStandardMaterial color={FISH_STYLE.color} />
-    </mesh>
+    <group ref={ref}>
+      <mesh rotation-x={Math.PI / 2}>
+        <capsuleGeometry args={[FISH_STYLE.bodyRadius, FISH_STYLE.bodyLength]} />
+        <meshStandardMaterial color={FISH_STYLE.color} />
+      </mesh>
+    </group>
   );
 }
