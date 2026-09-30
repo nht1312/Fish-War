@@ -12,7 +12,7 @@ const spawn = createMatch(DEFAULT_CONFIG).fisherman;
 function run(state: FishermanState, x: number, z: number, ticks: number): FishermanState {
   let s = state;
   for (let i = 0; i < ticks; i++) {
-    s = stepFishermanMovement(s, { move: { x, z } }, DEFAULT_CONFIG, DT);
+    s = stepFishermanMovement(s, { move: { x, z }, cast: false }, DEFAULT_CONFIG, DT);
   }
   return s;
 }

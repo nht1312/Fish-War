@@ -38,7 +38,10 @@ describe("createMatch", () => {
 });
 
 const STILL = { x: 0, z: 0 };
-const IDLE: MatchInputs = { fish: { move: STILL, dive: false }, fisherman: { move: STILL } };
+const IDLE: MatchInputs = {
+  fish: { move: STILL, dive: false },
+  fisherman: { move: STILL, cast: false },
+};
 
 describe("stepMatch", () => {
   const dt = 1 / DEFAULT_CONFIG.tickRate;
@@ -56,11 +59,33 @@ describe("stepMatch", () => {
     const start = createMatch(DEFAULT_CONFIG);
     const inputs: MatchInputs = {
       fish: { move: { x: 1, z: 0 }, dive: false },
-      fisherman: { move: { x: -1, z: 0 } },
+      fisherman: { move: { x: -1, z: 0 }, cast: false },
     };
     const next = stepMatch(start, inputs, DEFAULT_CONFIG, dt);
     expect(next.fish.position.x).toBeGreaterThan(start.fish.position.x);
     expect(next.fisherman.position.x).toBeLessThan(start.fisherman.position.x);
+  });
+});
+
+describe("stepMatch casting", () => {
+  const dt = 1 / DEFAULT_CONFIG.tickRate;
+  const pressCast: MatchInputs = { ...IDLE, fisherman: { move: STILL, cast: true } };
+
+  it("starts with the line idle", () => {
+    expect(createMatch(DEFAULT_CONFIG).line).toEqual({ phase: "idle" });
+  });
+
+  it("casts once per press, not every tick the button is held", () => {
+    const first = stepMatch(createMatch(DEFAULT_CONFIG), pressCast, DEFAULT_CONFIG, dt);
+    expect(first.line.phase).toBe("cast");
+    expect(first.fisherman.castHeld).toBe(true);
+
+    const held = stepMatch(first, pressCast, DEFAULT_CONFIG, dt);
+    expect(held.line.phase).toBe("cast");
+
+    const released = stepMatch(held, IDLE, DEFAULT_CONFIG, dt);
+    const retrieved = stepMatch(released, pressCast, DEFAULT_CONFIG, dt);
+    expect(retrieved.line.phase).toBe("idle");
   });
 });
 

@@ -7,8 +7,10 @@ import { useState } from "react";
 import { createSimRunner } from "../sim/simRunner";
 import { Dock } from "./Dock";
 import { FishermanMesh } from "./FishermanMesh";
+import { FishingLine } from "./FishingLine";
 import { FishMesh } from "./FishMesh";
 import { Pond } from "./Pond";
+import { Rod } from "./Rod";
 import { CAMERA, LIGHTING } from "./sceneConfig";
 import { SimLoop } from "./SimLoop";
 
@@ -26,6 +28,8 @@ export default function GameCanvas() {
       <Dock dock={runner.config.dock} />
       <FishMesh runner={runner} />
       <FishermanMesh runner={runner} />
+      <Rod runner={runner} />
+      <FishingLine runner={runner} />
     </Canvas>
   );
 }

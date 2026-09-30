@@ -75,7 +75,7 @@ the simulation's shape is real.
 - **Checkpoint A** — both avatars controllable
 
 ### Phase 2 — Rod & line
-- [ ] 6. Fisherman aims and casts the rod
+- [x] 6. Fisherman aims and casts the rod
 - [ ] 7. Fish gets hooked; line length constrains the fish
 - [ ] 8. Line tension and line break (HUD tension bar)
 - [ ] 9. Reel and drag

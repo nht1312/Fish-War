@@ -41,13 +41,14 @@ function readFishInput(keyboard: Keyboard): FishInput {
   };
 }
 
-/** Hot-seat Fisherman controls: arrow keys walk (Up = toward the pond, -Z). */
+/** Hot-seat Fisherman controls: arrow keys walk (Up = toward the pond, -Z), Enter casts. */
 function readFishermanInput(keyboard: Keyboard): FishermanInput {
   return {
     move: {
       x: axis(keyboard, "ArrowLeft", "ArrowRight"),
       z: axis(keyboard, "ArrowUp", "ArrowDown"),
     },
+    cast: keyboard.isDown("Enter"),
   };
 }
 

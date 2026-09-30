@@ -40,6 +40,15 @@ export interface FishermanConfig {
   readonly spawnYaw: number;
 }
 
+export interface RodConfig {
+  /** Rod tip height above the fisherman's feet (m). */
+  readonly tipHeight: number;
+  /** Rod tip distance in front of the fisherman (m). */
+  readonly tipReach: number;
+  /** Horizontal distance a cast lands in front of the fisherman (m). */
+  readonly castDistance: number;
+}
+
 /** Every gameplay tuning value. Passed in, never hard-coded in systems. */
 export interface MatchConfig {
   /** Simulation ticks per second. */
@@ -50,6 +59,7 @@ export interface MatchConfig {
   readonly dock: DockConfig;
   readonly fish: FishConfig;
   readonly fisherman: FishermanConfig;
+  readonly rod: RodConfig;
   readonly fishSpawn: Vec3;
   readonly fishermanSpawn: Vec3;
 }
@@ -84,6 +94,7 @@ export const DEFAULT_CONFIG: MatchConfig = {
     surfaceTolerance: 0.1,
   },
   fisherman: { moveSpeed: 4, acceleration: 25, deceleration: 25, spawnYaw: Math.PI },
+  rod: { tipHeight: 2.2, tipReach: 1.2, castDistance: 12 },
   fishSpawn: { x: 0, y: -FISH_SPAWN_DEPTH, z: 0 },
   fishermanSpawn: { x: DOCK.center.x, y: DOCK.height, z: DOCK.center.z },
 };

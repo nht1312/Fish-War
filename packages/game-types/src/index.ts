@@ -38,7 +38,17 @@ export interface FishermanState {
   readonly velocity: Vec3;
   /** Heading around the Y axis in radians; 0 faces +Z. */
   readonly yaw: number;
+  /** Cast button state last tick, so the sim can tell a fresh press from a hold. */
+  readonly castHeld: boolean;
 }
+
+/**
+ * The fishing line. Idle: reeled in at the rod. Cast: the hook sits in the
+ * water where it landed, `length` metres of line from the rod tip.
+ */
+export type LineState =
+  | { readonly phase: "idle" }
+  | { readonly phase: "cast"; readonly hookPosition: Vec3; readonly length: number };
 
 /** What the fish player wants to do this tick. Intent only, never results. */
 export interface FishInput {
@@ -52,6 +62,8 @@ export interface FishInput {
 export interface FishermanInput {
   /** Desired walk direction on the dock; magnitude above 1 is normalised. */
   readonly move: HorizontalVec;
+  /** Cast button held. A fresh press casts, or retrieves a cast hook. */
+  readonly cast: boolean;
 }
 
 /** Every player's intent for one tick. */
@@ -70,4 +82,5 @@ export interface MatchState {
   readonly time: number;
   readonly fish: FishState;
   readonly fisherman: FishermanState;
+  readonly line: LineState;
 }

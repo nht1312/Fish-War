@@ -37,3 +37,17 @@ export const LIGHTING = {
   sunPosition: [10, 20, 10] as const,
   skyColor: "#bfe3ff",
 } as const;
+
+export const ROD_STYLE = {
+  /** Where the fisherman holds the rod, above his feet (m). */
+  handHeight: 1.2,
+  baseRadius: 0.04,
+  tipRadius: 0.015,
+  color: "#5b3a1e",
+} as const;
+
+export const LINE_STYLE = {
+  color: "#f5f5f5",
+  bobberRadius: 0.15,
+  bobberColor: "#e63946",
+} as const;

@@ -3,6 +3,7 @@ import type { MatchInputs, MatchState } from "@fishwar/game-types";
 import type { MatchConfig } from "./config";
 import { stepFishermanMovement } from "./systems/fishermanMovement";
 import { stepFishMovement } from "./systems/fishMovement";
+import { stepLine } from "./systems/line";
 
 const AT_REST = { x: 0, y: 0, z: 0 } as const;
 
@@ -16,7 +17,9 @@ export function createMatch(config: MatchConfig): MatchState {
       position: config.fishermanSpawn,
       velocity: AT_REST,
       yaw: config.fisherman.spawnYaw,
+      castHeld: false,
     },
+    line: { phase: "idle" },
   };
 }
 
@@ -30,11 +33,13 @@ export function stepMatch(
   config: MatchConfig,
   dt: number,
 ): MatchState {
+  const fisherman = stepFishermanMovement(state.fisherman, inputs.fisherman, config, dt);
   return {
     ...state,
     tick: state.tick + 1,
     time: state.time + dt,
     fish: stepFishMovement(state.fish, inputs.fish, config, dt),
-    fisherman: stepFishermanMovement(state.fisherman, inputs.fisherman, config, dt),
+    line: stepLine(state.line, fisherman, inputs.fisherman, config),
+    fisherman: { ...fisherman, castHeld: inputs.fisherman.cast },
   };
 }

@@ -125,7 +125,7 @@ dock/shore rectangle. The fisherman faces the pond by default.
 
 ## Phase 2 — Rod & line
 
-### - [ ] Task 6: Fisherman aims and casts the rod
+### - [x] Task 6: Fisherman aims and casts the rod
 
 **Description:** Add a rod to the fisherman: a mesh plus a rod-tip position derived in
 core from the fisherman's position and facing. Pressing `Enter` while the line is

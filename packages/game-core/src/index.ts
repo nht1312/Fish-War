@@ -23,10 +23,12 @@ export {
   type FishermanConfig,
   type MatchConfig,
   type PondConfig,
+  type RodConfig,
 } from "./config";
 export { createMatch, stepMatch } from "./match";
 export { stepFishermanMovement } from "./systems/fishermanMovement";
 export { isAtSurface, stepFishMovement } from "./systems/fishMovement";
+export { castLandingPoint, rodTipPosition, stepLine } from "./systems/line";
 export {
   integrateKinematic,
   type Bounds2D,
