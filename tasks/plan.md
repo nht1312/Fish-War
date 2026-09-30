@@ -8,9 +8,8 @@ Detailed tasks with acceptance criteria live in `tasks/todo.md`.
 
 Build the 1v1 Fish-vs-Fisherman game in the order from CLAUDE.md §15: an offline,
 playable gameplay loop first (Phases 1–4), then multiplayer with server authority
-(Phase 5), then UI and polish (Phase 6). Phases 1–4 are planned in detail; Phases
-5–6 are planned coarsely and should be re-planned at the Phase 4 checkpoint, once
-the simulation's shape is real.
+(Phase 5), then UI and polish (Phase 6). Phases 1–4 are done. Phase 5 was
+re-planned in detail at Checkpoint D; Phase 6 stays coarse until Checkpoint E.
 
 ## Architecture Decisions
 
@@ -54,6 +53,26 @@ the simulation's shape is real.
 11. **No PostgreSQL/Redis in this plan.** A single-process 1v1 room needs neither.
     Add them only when persistence or multi-instance matchmaking is requested.
 
+12. **Multiplayer v1 = one room, two seats.** The first connection plays Fish, the
+    second plays Fisherman, and a third is told the room is full. No lobby, no
+    accounts, no persistence. The team is two (the owner and Claude), so this is the
+    smallest thing that proves server authority.
+13. **Wire format: JSON over `ws`.** The client sends seq-numbered intent for its own
+    role; the server sends full `MatchState` snapshots every tick (small at 30 Hz on a
+    LAN). Delta compression only if measurements demand it.
+14. **Room logic is pure and socket-free.** `apps/game-server/src/room.ts` holds seats,
+    latest inputs and the match; `index.ts` only wires sockets and the tick timer, so
+    the rules are unit-tested without a network.
+15. **Message parsing lives in `game-core`** (`protocol.ts`): pure, tested, and used by
+    both the server (client messages) and the web (server messages). Protocol *types*
+    live in `game-types`.
+16. **Local-first hosting.** The client connects to `ws://<page host>:8080` (overridable
+    with `NEXT_PUBLIC_GAME_SERVER_URL`), so two tabs on one machine work, and so does a
+    second machine on the same LAN.
+17. **Smoothing: interpolation first, prediction only if needed.** Every entity is
+    rendered slightly in the past, between the last two snapshots. Own-avatar
+    prediction (Task 20b) is built only if Checkpoint E shows input lag is felt.
+
 ### New dependencies (each is justified in its task)
 
 | Package | Where | Why |
@@ -61,6 +80,7 @@ the simulation's shape is real.
 | `three`, `@types/three` | web | 3D rendering (stack §6) |
 | `@react-three/fiber` | web | React renderer for three (stack §6) |
 | `zustand` | web | HUD/UI state (stack §6). Added in Task 8, not before |
+| `vitest` (dev) | game-server | Unit-test the room logic, same runner as game-core. Task 17 |
 
 `@react-three/drei` and Rapier are intentionally **not** added.
 
@@ -93,13 +113,14 @@ the simulation's shape is real.
 - [x] 15. Match state: countdown, timer, escape zone, outcome, restart
 - **Checkpoint D** — full offline match, start to finish. **Re-plan Phases 5–6 here.**
 
-### Phase 5 — Multiplayer (coarse)
-- [ ] 16. Network protocol types and message validation
-- [ ] 17. Server room: two clients, role assignment, authoritative tick
-- [ ] 18. Client online mode: send inputs, render server snapshots
-- [ ] 19. Server input validation and rate limiting
-- [ ] 20. Client prediction (own avatar) and interpolation (opponent)
-- **Checkpoint E** — two browsers play a match over the network
+### Phase 5 — Multiplayer (re-planned at Checkpoint D)
+- [ ] 16. Protocol types and message parsing
+- [ ] 17. Server room: two seats, authoritative tick, snapshots
+- [ ] 18. Client online mode: send own input, render server snapshots
+- [ ] 19. Server hardening: input ordering, rate and size limits
+- [ ] 20. Snapshot interpolation
+- [ ] 20b. (Optional) Own-avatar prediction, only if Checkpoint E asks for it
+- **Checkpoint E** — two tabs play a full match through the server
 
 ### Phase 6 — UI & polish (coarse)
 - [ ] 21. Menu/lobby and result screen
@@ -119,7 +140,8 @@ the simulation's shape is real.
                   14 net (needs 7, 10)
                   15 match state (needs 8, 10, 12, 14)
                                    │
-                  16 ─► 17 ─► 18 ─► 19 ─► 20 ─► 21 ─► 22
+                  16 ─► 17 ─┬─► 18 ─► 20 ─► (20b) ─► 21 ─► 22
+                            └─► 19
 ```
 
 Tasks 10–13 are mostly independent of each other once Task 9 is done, but they all
@@ -135,16 +157,15 @@ parallel.
 | Hot-seat controls are awkward | Low | Offline only, for testing. The mapping is isolated in one web module. |
 | Next.js SSR + three/WebGL | Med | Load the canvas through `next/dynamic` with `ssr: false` in Task 1 (high-risk integration done first). |
 | Phase 5 reveals non-serialisable state | Med | `MatchState` is plain JSON data from day one (no classes, no Maps). |
-| Prediction complexity (Task 20) | Med | Deferred until authority works. Re-plan at Checkpoint D. |
+| Prediction complexity | Med | Split out as optional Task 20b; interpolation alone may be enough on a LAN. |
+| Client and server configs drift | Med | Both import `DEFAULT_CONFIG` from game-core; the snapshot is the truth either way. |
+| Network code leaks into gameplay | High | `stepMatch` stays unaware of sockets; the room and net client only call it or render its output. |
 
 ## Open Questions
 
-1. **Offline controls:** is local hot-seat (two players, one keyboard) acceptable, or
-   do you want a simple AI opponent or a role toggle instead? The plan assumes
-   hot-seat.
-2. **How hooking works:** the plan assumes the fish is hooked automatically when it
-   enters the hook radius, with a short grace window where the fish can dodge by
-   leaving. An alternative is an explicit "bite/strike" timing mini-game. Which one?
-3. **Water gun vs. line:** can the fish shoot while hooked? The plan assumes yes (it
-   is comedic and gives the fish a counter).
-4. **Rapier:** OK to defer it (Decision 8), even though CLAUDE.md §6 lists it?
+Resolved with the defaults: hot-seat offline controls; automatic hooking (no grace
+window was needed); the fish can shoot while hooked; Rapier deferred. Phase 5 scope
+was delegated to Claude at Checkpoint D (Decisions 12–17).
+
+1. **Balance tuning** happens whenever playtesting turns something up, not as a
+   separate phase.

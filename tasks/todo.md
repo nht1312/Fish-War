@@ -358,51 +358,153 @@ timer and a minimal result overlay, and `R` restarts.
 ### Checkpoint D — full offline match
 - [ ] All standard verification passes
 - [ ] A complete hot-seat match can end in each of the 6 §4 outcomes
-- [ ] `MatchState` round-trips through `JSON.stringify`/`JSON.parse` unchanged (network-ready)
-- [ ] **Re-plan Phases 5–6 with the human** before continuing
+- [x] `MatchState` round-trips through `JSON.stringify`/`JSON.parse` unchanged (network-ready)
+- [x] **Re-plan Phases 5–6 with the human** before continuing (delegated to Claude; see plan Decisions 12–17)
 
 ---
 
-## Phase 5 — Multiplayer (coarse, re-plan at Checkpoint D)
+## Phase 5 — Multiplayer (re-planned at Checkpoint D)
 
-### - [ ] Task 16: Network protocol types and message validation
-Client→server: `join`, `input` (seq-numbered `FishInput | FishermanInput`). Server→client:
-`welcome` (role), `snapshot` (tick + `MatchState`), `matchEnded`. Hand-written type
-guards in `game-types` (no schema-library dependency unless justified).
-**AC:** the messages are typed; the guards reject malformed input (unit-tested). **Deps:** 15
+Scope and decisions: plan Decisions 12–17. One room, two seats, JSON over `ws`,
+server authoritative, local-first.
+
+### - [ ] Task 16: Protocol types and message parsing
+
+**Description:** Define the wire protocol and a safe parser. Types go in
+`game-types/src/protocol.ts`. Client→server messages: `input` (`seq`, plus
+`FishInput` or `FishermanInput`) and `rematch`. Server→client messages:
+`welcome` (your role), `waiting` (for an opponent), `room-full`, `snapshot` (`MatchState`
+plus `ackSeq`), and `opponent-left`. Pure parsers go in `game-core/src/protocol.ts`:
+`parseClientMessage(raw, role)` validates the input shape for that role, and
+`parseServerMessage(raw)` does the same for the client. Both return `null` on
+anything malformed, never throw, and use no schema-library dependency.
+
+**Acceptance criteria:**
+- [ ] Every message type round-trips: serialised with `JSON.stringify`, then parsed back to an equal value
+- [ ] Malformed input is rejected with `null`: bad JSON, an unknown type, missing or ill-typed fields, non-finite numbers, and the other role's input shape
+- [ ] A movement vector longer than 1 is clamped to length 1, and an out-of-range `dragChange` is clamped to [-1, 1]
+
+**Verification:** `pnpm --filter @fishwar/game-core test -- protocol`
+**Dependencies:** 15
+**Files likely touched:** `packages/game-types/src/protocol.ts`, `packages/game-types/src/index.ts`, `packages/game-core/src/protocol.ts` + test, `packages/game-core/src/index.ts`
+**Scope:** S–M
 
 ### - [ ] Task 17: Server room with an authoritative tick
-The server pairs two connections into a room, assigns Fish/Fisherman, runs
-`stepMatch` at `TICK_RATE` with the latest input per player, and broadcasts snapshots.
-Replace the echo placeholder.
-**AC:** two WS clients get roles and receive advancing snapshots; the room is cleaned up on disconnect; room logic is tested without sockets. **Deps:** 16
+
+**Description:** Pure room logic in `apps/game-server/src/room.ts`:
+- `join`: the first seat is Fish, the second is Fisherman, and a third join is refused.
+- `leave`: the match is discarded and the remaining player goes back to waiting.
+- `receiveInput`: keeps the latest input per seat.
+- `requestRematch`: once a match has ended, either player can start a new one.
+- `tickRoom`: steps `stepMatch` with each seat's latest input, or idle input if none has arrived.
+
+`index.ts` replaces the echo placeholder. It wires the sockets to the room, ticks at
+`tickRate` on a timer, and broadcasts a snapshot to both seats every tick. Add
+`vitest` as a dev dependency of game-server to unit-test the room, the same test runner
+game-core uses.
+
+**Acceptance criteria:**
+- [ ] Room tests without sockets:
+  - seats are assigned in order and a third join is refused
+  - the match exists only while both seats are filled
+  - after a leave, the remaining player waits
+  - a rematch after an ended match gives a fresh match
+- [ ] The tick applies each seat's own input only. The Fish seat's input never moves the fisherman, and the other way round
+- [ ] Manual: two `wscat`/browser connections receive `welcome` and then advancing `snapshot` ticks, and a third connection gets `room-full`
+
+**Verification:** `pnpm --filter @fishwar/game-server test`; `pnpm --filter @fishwar/game-server start`
+**Dependencies:** 16
+**Deps added:** `vitest` (dev) in game-server
+**Files likely touched:** `apps/game-server/src/room.ts` + test, `apps/game-server/src/index.ts`, `apps/game-server/package.json`
+**Scope:** M
 
 ### - [ ] Task 18: Client online mode
-The web connects, sends inputs for its role only, and renders server snapshots (no
-prediction yet). Offline hot-seat stays available.
-**AC:** two browsers play a match with the server deciding every outcome. **Deps:** 17
 
-### - [ ] Task 19: Server input validation and rate limiting
-Clamp and normalise movement vectors, drop out-of-order or excess input messages, and
-ignore actions the role doesn't own. Cooldowns and stamina are already server-side via
-`stepMatch`.
-**AC:** tests show that forged or oversized inputs cannot speed up an avatar or trigger foreign actions. **Deps:** 17
+**Description:** A `GameSession` interface (`config`, `getState`, `advance`, `restart`)
+is implemented by the existing local `SimRunner` and by a new `RemoteSession`
+(`apps/web/src/net/`):
+- It connects with the browser `WebSocket` to `NEXT_PUBLIC_GAME_SERVER_URL`, or to `ws://<page host>:8080` by default.
+- `advance` sends only this client's role input, seq-numbered, at most once per sim tick.
+- `getState` returns the latest snapshot. `restart` sends `rematch`.
 
-### - [ ] Task 20: Prediction and interpolation
-Predict the local avatar with the shared `stepMatch` and reconcile on snapshots (seq
-ack). Interpolate the remote avatar between snapshots.
-**AC:** movement feels responsive under 100 ms of artificial latency; no rubber-banding when latency is low. **Deps:** 18, 19
+`/?online` selects online mode, and plain `/` stays offline hot-seat (a real menu comes
+in Task 21). A small status label shows your role or "Waiting for opponent" / "Room
+full" / "Opponent left".
+
+**Acceptance criteria:**
+- [ ] Two tabs on `/?online` play a full match. Each tab controls only its own role, with the usual keys for that role, and every outcome is decided by the server
+- [ ] Closing one tab shows "Opponent left" in the other, and reopening it starts a new match
+- [ ] The offline mode at `/` behaves exactly as before
+
+**Verification:** run `pnpm dev`, open two tabs on `/?online`, and play; check `/` separately
+**Dependencies:** 17
+**Files likely touched:** `apps/web/src/net/{remoteSession,serverUrl}.ts`, `apps/web/src/sim/simRunner.ts` (session interface), `apps/web/src/scene/{GameCanvas,SimLoop}.tsx`, `apps/web/src/input/keyboard.ts` (per-role read), `apps/web/src/ui/ConnectionStatus.tsx`
+**Scope:** M–L (split `ConnectionStatus` off if it grows)
+
+### - [ ] Task 19: Server hardening — input ordering, rate and size limits
+
+**Description:** The server never trusts the client for results (§8). Beyond the
+parser from Task 16, it adds these rules:
+- drop input whose `seq` is not newer than the last one accepted
+- drop messages beyond a per-connection rate cap (2× `tickRate` per second)
+- ignore messages over a size cap
+- treat a seat that has sent nothing for a while as idle input
+
+Cooldowns, stamina, tension and outcomes are already computed only in `stepMatch`.
+
+**Acceptance criteria:**
+- [ ] Out-of-order and duplicate `seq` values are ignored
+- [ ] A flood of messages cannot make an avatar act more than once per tick or faster than its config allows
+- [ ] Oversized or malformed messages are dropped without crashing the server or the room
+
+**Verification:** `pnpm --filter @fishwar/game-server test`
+**Dependencies:** 17
+**Files likely touched:** `apps/game-server/src/room.ts` + test, `apps/game-server/src/limits.ts` + test, `apps/game-server/src/index.ts`
+**Scope:** S–M
+
+### - [ ] Task 20: Snapshot interpolation
+
+**Description:** Online, the client renders every entity slightly in the past,
+blending between the last two snapshots so movement stays smooth between 30 Hz
+updates:
+- entities: fish, fisherman (position and yaw), and the shots
+- render delay: `interpolationDelayTicks`, about 2 ticks
+- `interpolateState(a, b, t)` is a pure function in game-core (tested). It blends positions, blends yaw along the shortest arc, and takes every discrete field (phase, line state, outcome, timers) from the newer snapshot.
+
+The HUD keeps reading the latest snapshot.
+
+**Acceptance criteria:**
+- [ ] `interpolateState` is tested: at t = 0 it returns `a`, at t = 1 it returns `b`, halfway it returns the midpoint, yaw wraps across ±π, and discrete fields come from `b`
+- [ ] Online movement looks smooth, with no 30 Hz stutter at 60 FPS
+- [ ] Offline mode does not interpolate (it renders sim state directly, as now)
+
+**Verification:** `pnpm --filter @fishwar/game-core test -- interpolate`; manual two-tab comparison
+**Dependencies:** 18
+**Files likely touched:** `packages/game-core/src/interpolate.ts` + test, `apps/web/src/net/remoteSession.ts`
+**Scope:** S–M
+
+### - [ ] Task 20b (optional): Own-avatar prediction
+
+Only if Checkpoint E shows that your own input feels laggy. The client runs the local
+avatar's movement with shared game-core code, replays unacknowledged inputs when a
+snapshot arrives (using `ackSeq`), and snaps back if it diverges past a threshold.
+Re-plan it in detail if it's needed.
 
 ### Checkpoint E — networked match
-- [ ] Two browsers on different machines complete a match; the server is the only authority
+- [ ] All standard verification passes, including game-server tests
+- [ ] Two tabs on `/?online` complete a full match, and the server decides the outcome
+- [ ] Closing and reopening a tab mid-match recovers cleanly
+- [ ] If a second machine is available: it joins via `http://<host LAN IP>:3000/?online`
+- [ ] Decide whether Task 20b is needed
 
 ---
 
 ## Phase 6 — UI & polish (coarse)
 
-### - [ ] Task 21: Menu/lobby and result screen
-Choose offline or online, a waiting-for-opponent state, role display, and a result
-screen with a rematch option. **Deps:** 18
+### - [ ] Task 21: Start menu and online flow polish
+A start screen to choose Offline (hot-seat) or Online, replacing `/?online`. Polish
+the waiting, role and rematch screens that Task 18 introduced in minimal form.
+**Deps:** 18
 
 ### - [ ] Task 22: Polish pass
 Scope to be defined with the human (placeholder art, juice, sound). **Deps:** 21
