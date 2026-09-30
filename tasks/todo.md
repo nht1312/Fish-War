@@ -510,7 +510,7 @@ the waiting, role and rematch screens that Task 18 introduced in minimal form.
 Scope chosen by the human: readability (22a) and sound (22b). Feedback effects and
 balance tuning are not in scope.
 
-### - [ ] Task 22a: Readable characters and a sagging line
+### - [x] Task 22a: Readable characters and a sagging line
 
 **Description:** Rendering only, no gameplay change:
 - **Fish:** a body, a tail, a dorsal fin and eyes, facing its heading. The tail wags faster the faster it swims.

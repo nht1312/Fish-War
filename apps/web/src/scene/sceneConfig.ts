@@ -18,14 +18,41 @@ export const FISH_STYLE = {
   bodyRadius: 0.4,
   bodyLength: 1.2,
   color: "#ff8c42",
+  finColor: "#e76f2d",
+  tailLength: 0.6,
+  tailRadius: 0.35,
+  /** The tail and fin are flattened sideways to this fraction of their width. */
+  finThickness: 0.25,
+  finHeight: 0.35,
+  finLength: 0.6,
+  eyeRadius: 0.08,
+  eyeColor: "#111111",
+  /** Eyes: sideways offset, height and distance forward from the body centre (m). */
+  eyeOffset: { x: 0.24, y: 0.15, z: 0.8 },
+  /** Tail wag: swing (radians), and frequency at rest plus extra per m/s of speed (Hz). */
+  wagAngle: 0.45,
+  wagRestHz: 1.5,
+  wagHzPerSpeed: 0.5,
 } as const;
 
 export const FISHERMAN_STYLE = {
-  radius: 0.4,
-  bodyHeight: 1.0,
+  /** Torso (jacket) colour, and while a dodge makes him invulnerable. */
   color: "#3a6b35",
-  /** Shown while a dodge makes him invulnerable. */
   dodgeColor: "#b8f2b0",
+  legColor: "#2b3a67",
+  skinColor: "#f1c27d",
+  hatColor: "#c9a15b",
+  legHeight: 0.8,
+  legRadius: 0.1,
+  /** Sideways distance of each leg from the centre (m). */
+  legSpacing: 0.15,
+  torsoRadius: 0.3,
+  torsoLength: 0.5,
+  headRadius: 0.22,
+  hatBrimRadius: 0.36,
+  hatBrimHeight: 0.04,
+  hatCrownRadius: 0.2,
+  hatCrownHeight: 0.25,
 } as const;
 
 export const CAMERA = {
@@ -52,6 +79,11 @@ export const LINE_STYLE = {
   color: "#f5f5f5",
   bobberRadius: 0.15,
   bobberColor: "#e63946",
+  /** Straight segments the hanging curve is drawn with. */
+  segments: 16,
+  /** A slack line hangs this much per metre of span, up to maxSag (m). */
+  sagPerMeter: 0.08,
+  maxSag: 1.2,
 } as const;
 
 export const SHOT_STYLE = {

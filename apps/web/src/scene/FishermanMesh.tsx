@@ -1,36 +1,58 @@
 import { isInvulnerable } from "@fishwar/game-core";
 import { useFrame } from "@react-three/fiber";
 import { useRef } from "react";
-import type { Mesh, MeshStandardMaterial } from "three";
+import type { Group, MeshStandardMaterial } from "three";
 
 import type { SimRunner } from "../sim/simRunner";
-import { FISHERMAN_STYLE } from "./sceneConfig";
+import { FISHERMAN_STYLE as S } from "./sceneConfig";
 
-/** Sim position is the fisherman's feet; the capsule is centred above them. */
-const FEET_TO_CENTER = FISHERMAN_STYLE.radius + FISHERMAN_STYLE.bodyHeight / 2;
+// Heights above the feet (the sim position), bottom to top.
+const TORSO_CENTER = S.legHeight + S.torsoRadius + S.torsoLength / 2;
+const HEAD_CENTER = S.legHeight + S.torsoLength + S.torsoRadius * 2 + S.headRadius * 0.8;
+const BRIM_Y = HEAD_CENTER + S.headRadius * 0.7;
+const CROWN_Y = BRIM_Y + S.hatCrownHeight / 2;
 
 /**
- * Placeholder fisherman: an upright capsule, placed from sim state. It changes
- * colour while a dodge makes him invulnerable to shots.
+ * The fisherman: legs, torso, head and hat, placed at his feet from sim state
+ * and turned to his heading. The jacket changes colour while a dodge makes him
+ * invulnerable to shots.
  */
 export function FishermanMesh({ runner }: { runner: SimRunner }) {
-  const ref = useRef<Mesh>(null);
-  const material = useRef<MeshStandardMaterial>(null);
+  const ref = useRef<Group>(null);
+  const jacket = useRef<MeshStandardMaterial>(null);
 
   useFrame(() => {
     const fisherman = runner.getState().fisherman;
     const { position, yaw } = fisherman;
-    ref.current?.position.set(position.x, position.y + FEET_TO_CENTER, position.z);
+    ref.current?.position.set(position.x, position.y, position.z);
     ref.current?.rotation.set(0, yaw, 0);
-    material.current?.color.set(
-      isInvulnerable(fisherman) ? FISHERMAN_STYLE.dodgeColor : FISHERMAN_STYLE.color,
-    );
+    jacket.current?.color.set(isInvulnerable(fisherman) ? S.dodgeColor : S.color);
   });
 
   return (
-    <mesh ref={ref}>
-      <capsuleGeometry args={[FISHERMAN_STYLE.radius, FISHERMAN_STYLE.bodyHeight]} />
-      <meshStandardMaterial ref={material} color={FISHERMAN_STYLE.color} />
-    </mesh>
+    <group ref={ref}>
+      {[-1, 1].map((side) => (
+        <mesh key={side} position={[side * S.legSpacing, S.legHeight / 2, 0]}>
+          <cylinderGeometry args={[S.legRadius, S.legRadius, S.legHeight]} />
+          <meshStandardMaterial color={S.legColor} />
+        </mesh>
+      ))}
+      <mesh position-y={TORSO_CENTER}>
+        <capsuleGeometry args={[S.torsoRadius, S.torsoLength]} />
+        <meshStandardMaterial ref={jacket} color={S.color} />
+      </mesh>
+      <mesh position-y={HEAD_CENTER}>
+        <sphereGeometry args={[S.headRadius]} />
+        <meshStandardMaterial color={S.skinColor} />
+      </mesh>
+      <mesh position-y={BRIM_Y}>
+        <cylinderGeometry args={[S.hatBrimRadius, S.hatBrimRadius, S.hatBrimHeight]} />
+        <meshStandardMaterial color={S.hatColor} />
+      </mesh>
+      <mesh position-y={CROWN_Y}>
+        <cylinderGeometry args={[S.hatCrownRadius, S.hatCrownRadius, S.hatCrownHeight]} />
+        <meshStandardMaterial color={S.hatColor} />
+      </mesh>
+    </group>
   );
 }

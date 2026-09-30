@@ -1,27 +1,38 @@
 import { rodTipPosition } from "@fishwar/game-core";
+import type { MatchState } from "@fishwar/game-types";
 import { useFrame } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
 import { BufferGeometry, Float32BufferAttribute, Line, LineBasicMaterial, type Mesh } from "three";
 
 import type { SimRunner } from "../sim/simRunner";
+import { sagCurvePoints } from "./lineCurve";
 import { LINE_STYLE } from "./sceneConfig";
 
-const SEGMENT_POINTS = 2;
 const XYZ = 3;
 
-/** A straight line from the rod tip to the bobber (cast) or the fish (hooked). */
+/** How much the line hangs: more over a longer span, none at breaking tension. */
+function lineSag(state: MatchState, span: number, breakStrength: number): number {
+  const tensionRatio = state.line.phase === "hooked" ? state.line.tension / breakStrength : 0;
+  const slack = Math.max(1 - tensionRatio, 0);
+  return Math.min(span * LINE_STYLE.sagPerMeter, LINE_STYLE.maxSag) * slack;
+}
+
+/**
+ * The line from the rod tip to the bobber (cast) or the fish (hooked), drawn
+ * as a hanging curve that straightens as tension rises. Rendering only.
+ */
 export function FishingLine({ runner }: { runner: SimRunner }) {
   const bobber = useRef<Mesh>(null);
   const line = useMemo(() => {
     const geometry = new BufferGeometry();
     geometry.setAttribute(
       "position",
-      new Float32BufferAttribute(new Float32Array(SEGMENT_POINTS * XYZ), XYZ),
+      new Float32BufferAttribute(new Float32Array((LINE_STYLE.segments + 1) * XYZ), XYZ),
     );
-    const segment = new Line(geometry, new LineBasicMaterial({ color: LINE_STYLE.color }));
-    // Endpoints move every frame; skip bounding-sphere upkeep.
-    segment.frustumCulled = false;
-    return segment;
+    const curve = new Line(geometry, new LineBasicMaterial({ color: LINE_STYLE.color }));
+    // Points move every frame; skip bounding-sphere upkeep.
+    curve.frustumCulled = false;
+    return curve;
   }, []);
 
   useEffect(
@@ -41,9 +52,13 @@ export function FishingLine({ runner }: { runner: SimRunner }) {
     // Cast: the line ends at the bobber. Hooked: it ends at the fish.
     const end = state.line.phase === "cast" ? state.line.hookPosition : state.fish.position;
     const tip = rodTipPosition(state.fisherman, runner.config);
+    const span = Math.hypot(end.x - tip.x, end.y - tip.y, end.z - tip.z);
+    const sag = lineSag(state, span, runner.config.tension.breakStrength);
+
     const positions = line.geometry.getAttribute("position");
-    positions.setXYZ(0, tip.x, tip.y, tip.z);
-    positions.setXYZ(1, end.x, end.y, end.z);
+    sagCurvePoints(tip, end, sag, LINE_STYLE.segments).forEach((p, i) => {
+      positions.setXYZ(i, p.x, p.y, p.z);
+    });
     positions.needsUpdate = true;
     bobber.current?.position.set(end.x, end.y, end.z);
   });
