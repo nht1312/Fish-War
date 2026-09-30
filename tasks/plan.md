@@ -124,7 +124,7 @@ re-planned in detail at Checkpoint D; Phase 6 stays coarse until Checkpoint E.
 
 ### Phase 6 — UI & polish (coarse)
 - [x] 21. Menu/lobby and result screen
-- [ ] 22. Polish pass (scope to be defined at the time)
+- 22. Polish pass: [ ] 22a readable characters and sagging line · [ ] 22b sound effects
 - **Checkpoint F** — MVP complete
 
 ## Dependency Graph

@@ -506,8 +506,46 @@ A start screen to choose Offline (hot-seat) or Online, replacing `/?online`. Pol
 the waiting, role and rematch screens that Task 18 introduced in minimal form.
 **Deps:** 18
 
-### - [ ] Task 22: Polish pass
-Scope to be defined with the human (placeholder art, juice, sound). **Deps:** 21
+### Task 22: Polish pass
+Scope chosen by the human: readability (22a) and sound (22b). Feedback effects and
+balance tuning are not in scope.
+
+### - [ ] Task 22a: Readable characters and a sagging line
+
+**Description:** Rendering only, no gameplay change:
+- **Fish:** a body, a tail, a dorsal fin and eyes, facing its heading. The tail wags faster the faster it swims.
+- **Fisherman:** legs, a torso, a head and a hat.
+- **Line:** a curved segment that sags when slack and straightens as tension rises.
+- **Curve maths:** the sag curve is a pure helper (\`sagCurvePoints\`), unit-tested.
+
+**Acceptance criteria:**
+- [ ] The fish's head end is obvious and it faces its movement; the fisherman reads as a person
+- [ ] The line hangs loose when cast or slack and is pulled straight at high tension
+- [ ] \`sagCurvePoints\` is tested: the endpoints are exact, the midpoint drops by the sag, and the point count is right
+
+**Verification:** \`pnpm --filter @fishwar/web test\`; manual look in offline mode
+**Dependencies:** 21
+**Files likely touched:** \`apps/web/src/scene/{FishMesh,FishermanMesh,FishingLine,sceneConfig}.tsx?\`, \`apps/web/src/scene/lineCurve.ts\` + test
+**Scope:** M
+
+### - [ ] Task 22b: Sound effects
+
+**Description:** Synthesised sound effects using the Web Audio API: no audio files and
+no new dependency.
+- **Detecting events:** \`detectSoundEvents(prev, next)\` is a pure, tested function that compares two consecutive rendered states. Its events: countdown beep, go, cast, hook, reel clicks, dive splash, shot, hit, dash, net swing, line snap and match end.
+- **Playing them:** a small player plays each event, with a limit on how often reel clicks repeat.
+- **Mute:** **M** toggles mute.
+- **Online:** it works the same, because events come from the rendered state.
+
+**Acceptance criteria:**
+- [ ] \`detectSoundEvents\` is tested for every event, and gives no events for identical states
+- [ ] Sounds play in both modes, and M mutes and unmutes them
+- [ ] There are no audio errors before the first user interaction (the AudioContext is created lazily and resumed)
+
+**Verification:** \`pnpm --filter @fishwar/web test\`; manual listen in both modes
+**Dependencies:** 21
+**Files likely touched:** \`apps/web/src/audio/{soundEvents,synth,soundPlayer}.ts\` + test, \`apps/web/src/scene/SimLoop.tsx\`, \`apps/web/src/input/bindings.ts\`
+**Scope:** M
 
 ### Checkpoint F — MVP complete
 - [ ] Every item in CLAUDE.md §2 exists, and §14 Definition of Done holds
