@@ -54,6 +54,19 @@ export interface LineConfig {
   readonly hookRadius: number;
 }
 
+export interface TensionConfig {
+  /** Tension at which the line starts to fail. */
+  readonly breakStrength: number;
+  /** Tension gained per second per m/s of outward pull. */
+  readonly pullToTension: number;
+  /** Tension lost per second, always. */
+  readonly decayRate: number;
+  /** Seconds at breakStrength before the line snaps. */
+  readonly breakGraceSeconds: number;
+  /** The line counts as taut within this distance of full length (m). */
+  readonly tautTolerance: number;
+}
+
 /** Every gameplay tuning value. Passed in, never hard-coded in systems. */
 export interface MatchConfig {
   /** Simulation ticks per second. */
@@ -66,6 +79,7 @@ export interface MatchConfig {
   readonly fisherman: FishermanConfig;
   readonly rod: RodConfig;
   readonly line: LineConfig;
+  readonly tension: TensionConfig;
   readonly fishSpawn: Vec3;
   readonly fishermanSpawn: Vec3;
 }
@@ -102,6 +116,13 @@ export const DEFAULT_CONFIG: MatchConfig = {
   fisherman: { moveSpeed: 4, acceleration: 25, deceleration: 25, spawnYaw: Math.PI },
   rod: { tipHeight: 2.2, tipReach: 1.2, castDistance: 12 },
   line: { hookRadius: 1 },
+  tension: {
+    breakStrength: 100,
+    pullToTension: 7.5,
+    decayRate: 20,
+    breakGraceSeconds: 1,
+    tautTolerance: 0.05,
+  },
   fishSpawn: { x: 0, y: -FISH_SPAWN_DEPTH, z: 0 },
   fishermanSpawn: { x: DOCK.center.x, y: DOCK.height, z: DOCK.center.z },
 };

@@ -45,12 +45,27 @@ export interface FishermanState {
 /**
  * The fishing line. Idle: reeled in at the rod. Cast: the hook sits in the
  * water where it landed, `length` metres of line from the rod tip. Hooked: the
- * fish is on the line and can be at most `length` metres from the rod tip.
+ * fish is on the line and can be at most `length` metres from the rod tip;
+ * `tension` builds while it pulls, and `overTensionTime` counts seconds spent
+ * at breaking strength.
  */
 export type LineState =
   | { readonly phase: "idle" }
   | { readonly phase: "cast"; readonly hookPosition: Vec3; readonly length: number }
-  | { readonly phase: "hooked"; readonly length: number };
+  | {
+      readonly phase: "hooked";
+      readonly length: number;
+      readonly tension: number;
+      readonly overTensionTime: number;
+    };
+
+/** Why a match ended. More reasons arrive with their systems. */
+export type OutcomeReason = "line-broken";
+
+export interface MatchOutcome {
+  readonly winner: Role;
+  readonly reason: OutcomeReason;
+}
 
 /** What the fish player wants to do this tick. Intent only, never results. */
 export interface FishInput {
@@ -85,4 +100,6 @@ export interface MatchState {
   readonly fish: FishState;
   readonly fisherman: FishermanState;
   readonly line: LineState;
+  /** Set once a win condition is met; null while the match is undecided. */
+  readonly outcome: MatchOutcome | null;
 }

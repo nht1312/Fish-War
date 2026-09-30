@@ -1,9 +1,18 @@
-import type { MatchInputs, MatchState } from "@fishwar/game-types";
+import type {
+  FishInput,
+  FishState,
+  LineState,
+  MatchInputs,
+  MatchOutcome,
+  MatchState,
+  Vec3,
+} from "@fishwar/game-types";
 
 import type { MatchConfig } from "./config";
 import { stepFishermanMovement } from "./systems/fishermanMovement";
 import { stepFishMovement } from "./systems/fishMovement";
 import { constrainToLine, rodTipPosition, stepLine } from "./systems/line";
+import { linePull, stepTension } from "./systems/tension";
 
 const AT_REST = { x: 0, y: 0, z: 0 } as const;
 
@@ -20,7 +29,32 @@ export function createMatch(config: MatchConfig): MatchState {
       castHeld: false,
     },
     line: { phase: "idle" },
+    outcome: null,
   };
+}
+
+const LINE_BROKEN: MatchOutcome = { winner: "fish", reason: "line-broken" };
+
+interface HookedFight {
+  readonly line: LineState;
+  readonly fish: FishState;
+  readonly outcome: MatchOutcome | null;
+}
+
+/** The hooked fish is held by the line, pulls on it, and may snap it. */
+function stepHookedFight(
+  line: Extract<LineState, { phase: "hooked" }>,
+  swum: FishState,
+  fishInput: FishInput,
+  tip: Vec3,
+  config: MatchConfig,
+  dt: number,
+): HookedFight {
+  const fish = constrainToLine(swum, tip, line.length);
+  const pull = linePull(fish, fishInput, tip, line.length, config);
+  const { broken, tension, overTensionTime } = stepTension(line, pull, config, dt);
+  if (broken) return { line: { phase: "idle" }, fish, outcome: LINE_BROKEN };
+  return { line: { ...line, tension, overTensionTime }, fish, outcome: null };
 }
 
 /**
@@ -36,17 +70,18 @@ export function stepMatch(
   const fisherman = stepFishermanMovement(state.fisherman, inputs.fisherman, config, dt);
   const swum = stepFishMovement(state.fish, inputs.fish, config, dt);
   const line = stepLine(state.line, fisherman, swum, inputs.fisherman, config);
-  const fish =
+  const fight =
     line.phase === "hooked"
-      ? constrainToLine(swum, rodTipPosition(fisherman, config), line.length)
-      : swum;
+      ? stepHookedFight(line, swum, inputs.fish, rodTipPosition(fisherman, config), config, dt)
+      : { line, fish: swum, outcome: null };
 
   return {
     ...state,
     tick: state.tick + 1,
     time: state.time + dt,
-    fish,
-    line,
+    fish: fight.fish,
+    line: fight.line,
     fisherman: { ...fisherman, castHeld: inputs.fisherman.cast },
+    outcome: state.outcome ?? fight.outcome,
   };
 }

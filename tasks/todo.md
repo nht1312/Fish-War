@@ -167,7 +167,7 @@ position is projected back onto the sphere and its outward velocity removed.
 **Files likely touched:** `packages/game-core/src/systems/line.ts` + test, `packages/game-core/src/match.ts`, `apps/web/src/scene/FishingLine.tsx`
 **Scope:** S–M
 
-### - [ ] Task 8: Line tension and line break
+### - [x] Task 8: Line tension and line break
 
 **Description:** Add a pure `computeTension` function. Tension rises when the fish
 pulls outward at full line length (proportional to the outward component of the fish's

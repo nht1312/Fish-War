@@ -111,6 +111,7 @@ describe("hooking", () => {
     const fish = fishAt(hook.x, 0, hook.z + 0.5);
     const line = stepLine(cast, holding, fish, noPress, DEFAULT_CONFIG);
     if (line.phase !== "hooked") throw new Error("expected hooked");
+    expect(line.tension).toBe(0);
     const tip = rodTipPosition(holding, DEFAULT_CONFIG);
     const { x, y, z } = fish.position;
     expect(line.length).toBeCloseTo(Math.hypot(x - tip.x, y - tip.y, z - tip.z));
@@ -133,7 +134,7 @@ describe("hooking", () => {
   });
 
   it("does not retrieve the line on a cast press while hooked", () => {
-    const hooked: LineState = { phase: "hooked", length: 10 };
+    const hooked: LineState = { phase: "hooked", length: 10, tension: 0, overTensionTime: 0 };
     expect(stepLine(hooked, onDock, FAR_FISH, press(true), DEFAULT_CONFIG)).toEqual(hooked);
   });
 });

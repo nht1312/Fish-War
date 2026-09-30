@@ -90,16 +90,48 @@ describe("stepMatch casting", () => {
   });
 });
 
+const HOOKED_12 = { phase: "hooked" as const, length: 12, tension: 0, overTensionTime: 0 };
+
 describe("stepMatch hooked fish", () => {
   const dt = 1 / DEFAULT_CONFIG.tickRate;
 
+  function runHooked(fish: MatchInputs["fish"], ticks: number): MatchState {
+    let state: MatchState = { ...createMatch(DEFAULT_CONFIG), line: HOOKED_12 };
+    for (let i = 0; i < ticks; i++) state = stepMatch(state, { ...IDLE, fish }, DEFAULT_CONFIG, dt);
+    return state;
+  }
+
+  it("starts with no outcome", () => {
+    expect(createMatch(DEFAULT_CONFIG).outcome).toBeNull();
+  });
+
+  it("snaps the line and lets the fish win when it pulls hard for long enough", () => {
+    const state = runHooked({ move: { x: 0, z: -1 }, dive: false }, 30 * 10);
+    expect(state.line.phase).toBe("idle");
+    expect(state.outcome).toEqual({ winner: "fish", reason: "line-broken" });
+  });
+
+  it("builds tension while pulling, before it snaps", () => {
+    const state = runHooked({ move: { x: 0, z: -1 }, dive: false }, 30);
+    if (state.line.phase !== "hooked") throw new Error("expected hooked");
+    expect(state.line.tension).toBeGreaterThan(0);
+  });
+
+  it("does not snap while the fish swims toward the rod", () => {
+    const state = runHooked({ move: { x: 0, z: 1 }, dive: false }, 30 * 10);
+    expect(state.line.phase).toBe("hooked");
+    expect(state.outcome).toBeNull();
+  });
+
   it("keeps a hooked fish within the line length while it swims away", () => {
     const start = createMatch(DEFAULT_CONFIG);
-    const hooked = { ...start, line: { phase: "hooked" as const, length: 12 } };
+    const hooked = { ...start, line: HOOKED_12 };
     const fleeing: MatchInputs = { ...IDLE, fish: { move: { x: 0.3, z: -1 }, dive: false } };
 
     let state: MatchState = hooked;
-    for (let i = 0; i < 300; i++) state = stepMatch(state, fleeing, DEFAULT_CONFIG, dt);
+    // Two seconds: long enough to hit the end of the line, short of snapping it.
+    for (let i = 0; i < 60; i++) state = stepMatch(state, fleeing, DEFAULT_CONFIG, dt);
+    expect(state.line.phase).toBe("hooked");
 
     const tip = rodTipPosition(state.fisherman, DEFAULT_CONFIG);
     const { x, y, z } = state.fish.position;

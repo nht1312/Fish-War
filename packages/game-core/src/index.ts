@@ -25,11 +25,13 @@ export {
   type MatchConfig,
   type PondConfig,
   type RodConfig,
+  type TensionConfig,
 } from "./config";
 export { createMatch, stepMatch } from "./match";
 export { stepFishermanMovement } from "./systems/fishermanMovement";
 export { isAtSurface, stepFishMovement } from "./systems/fishMovement";
 export { castLandingPoint, constrainToLine, rodTipPosition, stepLine } from "./systems/line";
+export { linePull, stepTension, type TensionState, type TensionStep } from "./systems/tension";
 export {
   integrateKinematic,
   type Bounds2D,

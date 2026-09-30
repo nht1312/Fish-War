@@ -69,7 +69,7 @@ export function stepLine(
       if (pressed) return { phase: "idle" };
       if (distance(fish.position, line.hookPosition) <= config.line.hookRadius) {
         const length = distance(rodTipPosition(fisherman, config), fish.position);
-        return { phase: "hooked", length };
+        return { phase: "hooked", length, tension: 0, overTensionTime: 0 };
       }
       return line;
     case "hooked":
