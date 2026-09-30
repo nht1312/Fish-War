@@ -1,15 +1,13 @@
 import { useFrame } from "@react-three/fiber";
 import { useEffect, useRef } from "react";
 
+import { APP_KEYS } from "../input/bindings";
 import { createKeyboard, readMatchInputs, type Keyboard } from "../input/keyboard";
 import type { SimRunner } from "../sim/simRunner";
 import { selectHud, useHudStore } from "../state/hudStore";
 
 /** HUD updates are throttled so React re-renders ~10x/s, not every frame. */
 const HUD_PUBLISH_INTERVAL_SECONDS = 0.1;
-
-/** App control, not a gameplay input: start a new match once one has ended. */
-const RESTART_KEY = "KeyR";
 
 /**
  * Drives the simulation from the render loop with keyboard input, mirrors HUD
@@ -30,7 +28,7 @@ export function SimLoop({ runner }: { runner: SimRunner }) {
 
   useFrame((_, delta) => {
     if (!keyboard.current) return;
-    if (runner.getState().phase === "ended" && keyboard.current.isDown(RESTART_KEY)) {
+    if (runner.getState().phase === "ended" && keyboard.current.isDown(APP_KEYS.restart)) {
       runner.restart();
     }
     runner.advance(delta, readMatchInputs(keyboard.current));

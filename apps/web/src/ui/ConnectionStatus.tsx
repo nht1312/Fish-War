@@ -7,40 +7,64 @@ import { useHudStore } from "../state/hudStore";
 
 const ROLE_LABEL: Record<Role, string> = { fish: "Fish", fisherman: "Fisherman" };
 
-const PHASE_LABEL: Record<ConnectionPhase, string> = {
+/** Phases that block play get a centred card; "in-match" only shows the role label. */
+const CARD_TEXT: Record<Exclude<ConnectionPhase, "in-match">, string> = {
   connecting: "Connecting to the game server…",
-  waiting: "Waiting for an opponent…",
-  "in-match": "",
-  "room-full": "The room is full. Try again later.",
+  waiting: "Waiting for an opponent… Open the game in another window or on another PC.",
+  "room-full": "The room is full. Press Esc to go back.",
   "opponent-left": "Your opponent left. Waiting for a new one…",
-  disconnected: "Disconnected from the game server.",
+  disconnected: "Disconnected from the game server. Is it running? Press Esc to go back.",
 };
 
-/** Online only: which role you play and what the connection is doing. Display only. */
+const TEXT_STYLE = {
+  fontFamily: "system-ui, sans-serif",
+  color: "#fff",
+  textShadow: "0 1px 2px #000",
+  textAlign: "center",
+} as const;
+
+/** Online only: your role, and what the connection is doing when not in a match. Display only. */
 export function ConnectionStatus() {
   const connection = useHudStore((s) => s.connection);
   if (!connection) return null;
 
-  const role = connection.role ? `You are the ${ROLE_LABEL[connection.role]}` : "";
-  const phase = PHASE_LABEL[connection.phase];
+  const role = connection.role ? `You are the ${ROLE_LABEL[connection.role]}` : null;
+
+  if (connection.phase === "in-match") {
+    return (
+      <div
+        role="status"
+        style={{
+          ...TEXT_STYLE,
+          position: "fixed",
+          top: 56,
+          left: "50%",
+          transform: "translateX(-50%)",
+          fontWeight: 700,
+        }}
+      >
+        {role}
+      </div>
+    );
+  }
 
   return (
     <div
       role="status"
       style={{
+        ...TEXT_STYLE,
         position: "fixed",
-        top: 64,
-        left: "50%",
-        transform: "translateX(-50%)",
-        fontFamily: "system-ui, sans-serif",
-        fontSize: 16,
-        color: "#fff",
-        textShadow: "0 1px 2px #000",
-        textAlign: "center",
+        inset: 0,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 8,
+        background: "rgba(0, 0, 0, 0.35)",
       }}
     >
-      {role && <div style={{ fontWeight: 700 }}>{role}</div>}
-      {phase && <div>{phase}</div>}
+      {role && <div style={{ fontSize: 28, fontWeight: 700 }}>{role}</div>}
+      <div style={{ fontSize: 18, maxWidth: 480 }}>{CARD_TEXT[connection.phase]}</div>
     </div>
   );
 }

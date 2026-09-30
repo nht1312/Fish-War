@@ -3,7 +3,7 @@
 import { Canvas } from "@react-three/fiber";
 import { useEffect, useState } from "react";
 
-import { createSession } from "../sim/createSession";
+import { createSession, type GameMode } from "../sim/createSession";
 import type { SimRunner } from "../sim/simRunner";
 import { Dock } from "./Dock";
 import { EscapeZone } from "./EscapeZone";
@@ -22,14 +22,14 @@ import { SimLoop } from "./SimLoop";
  * the online server). The session is created in an effect, not a state
  * initializer, so React dev double-invocation cannot open two connections.
  */
-export default function GameCanvas() {
+export default function GameCanvas({ mode }: { mode: GameMode }) {
   const [runner, setRunner] = useState<SimRunner | null>(null);
 
   useEffect(() => {
-    const session = createSession();
+    const session = createSession(mode);
     setRunner(session);
     return () => session.dispose();
-  }, []);
+  }, [mode]);
 
   if (!runner) return null;
 

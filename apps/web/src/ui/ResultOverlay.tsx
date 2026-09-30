@@ -21,6 +21,7 @@ const REASON_LABEL: Record<OutcomeReason, string> = {
 /** Who won and why, once the match has ended. Display only. */
 export function ResultOverlay() {
   const outcome = useHudStore((s) => s.outcome);
+  const online = useHudStore((s) => s.connection !== null);
   if (!outcome) return null;
 
   return (
@@ -42,7 +43,9 @@ export function ResultOverlay() {
     >
       <div style={{ fontSize: 56, fontWeight: 700 }}>{WINNER_LABEL[outcome.winner]}</div>
       <div style={{ fontSize: 22, marginTop: 8 }}>{REASON_LABEL[outcome.reason]}</div>
-      <div style={{ fontSize: 16, marginTop: 24, opacity: 0.85 }}>Press R to play again</div>
+      <div style={{ fontSize: 16, marginTop: 24, opacity: 0.85 }}>
+        {online ? "Press R to ask for a rematch" : "Press R to play again"} · Esc for the menu
+      </div>
     </div>
   );
 }

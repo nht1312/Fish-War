@@ -1,5 +1,7 @@
 import type { FishermanInput, FishInput, MatchInputs } from "@fishwar/game-types";
 
+import { FISHERMAN_KEYS, FISH_KEYS } from "./bindings";
+
 /** Tracks which physical keys (KeyboardEvent.code) are currently held. */
 export interface Keyboard {
   isDown(code: string): boolean;
@@ -33,35 +35,27 @@ function axis(keyboard: Keyboard, negative: string, positive: string): number {
   return Number(keyboard.isDown(positive)) - Number(keyboard.isDown(negative));
 }
 
-/**
- * Hot-seat Fish controls: WASD swims (W = away from the dock, toward -Z),
- * hold C to dive, hold Left Shift to sprint, Space to dash, F to fire the water gun.
- */
+/** Fish controls (see bindings.ts). Forward is away from the dock, toward -Z. */
 function readFishInput(keyboard: Keyboard): FishInput {
+  const k = FISH_KEYS;
   return {
-    move: { x: axis(keyboard, "KeyA", "KeyD"), z: axis(keyboard, "KeyW", "KeyS") },
-    dive: keyboard.isDown("KeyC"),
-    sprint: keyboard.isDown("ShiftLeft"),
-    dash: keyboard.isDown("Space"),
-    shoot: keyboard.isDown("KeyF"),
+    move: { x: axis(keyboard, k.left, k.right), z: axis(keyboard, k.forward, k.back) },
+    dive: keyboard.isDown(k.dive),
+    sprint: keyboard.isDown(k.sprint),
+    dash: keyboard.isDown(k.dash),
+    shoot: keyboard.isDown(k.shoot),
   };
 }
 
-/**
- * Hot-seat Fisherman controls: arrow keys walk (Up = toward the pond, -Z),
- * Enter casts / retrieves (hold while hooked to reel), [ and ] loosen / tighten drag,
- * . (period) dodges, / swings the net.
- */
+/** Fisherman controls (see bindings.ts). Forward is toward the pond, -Z. */
 function readFishermanInput(keyboard: Keyboard): FishermanInput {
+  const k = FISHERMAN_KEYS;
   return {
-    move: {
-      x: axis(keyboard, "ArrowLeft", "ArrowRight"),
-      z: axis(keyboard, "ArrowUp", "ArrowDown"),
-    },
-    cast: keyboard.isDown("Enter"),
-    dragChange: axis(keyboard, "BracketLeft", "BracketRight"),
-    dodge: keyboard.isDown("Period"),
-    net: keyboard.isDown("Slash"),
+    move: { x: axis(keyboard, k.left, k.right), z: axis(keyboard, k.forward, k.back) },
+    cast: keyboard.isDown(k.cast),
+    dragChange: axis(keyboard, k.loosenDrag, k.tightenDrag),
+    dodge: keyboard.isDown(k.dodge),
+    net: keyboard.isDown(k.net),
   };
 }
 

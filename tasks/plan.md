@@ -123,7 +123,7 @@ re-planned in detail at Checkpoint D; Phase 6 stays coarse until Checkpoint E.
 - **Checkpoint E** — two tabs play a full match through the server
 
 ### Phase 6 — UI & polish (coarse)
-- [ ] 21. Menu/lobby and result screen
+- [x] 21. Menu/lobby and result screen
 - [ ] 22. Polish pass (scope to be defined at the time)
 - **Checkpoint F** — MVP complete
 

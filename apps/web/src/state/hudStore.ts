@@ -25,7 +25,8 @@ export interface HudState {
   readonly connection: ConnectionStatus | null;
 }
 
-export const useHudStore = create<HudState>(() => ({
+/** What the HUD shows before (or between) sessions. */
+export const HUD_DEFAULTS: HudState = {
   lineHooked: false,
   tensionRatio: 0,
   dragRatio: 0,
@@ -36,7 +37,9 @@ export const useHudStore = create<HudState>(() => ({
   timeLeft: 0,
   outcome: null,
   connection: null,
-}));
+};
+
+export const useHudStore = create<HudState>(() => HUD_DEFAULTS);
 
 /** Derive the HUD values from the current sim state and connection. */
 export function selectHud(

@@ -501,7 +501,7 @@ Re-plan it in detail if it's needed.
 
 ## Phase 6 — UI & polish (coarse)
 
-### - [ ] Task 21: Start menu and online flow polish
+### - [x] Task 21: Start menu and online flow polish
 A start screen to choose Offline (hot-seat) or Online, replacing `/?online`. Polish
 the waiting, role and rematch screens that Task 18 introduced in minimal form.
 **Deps:** 18
