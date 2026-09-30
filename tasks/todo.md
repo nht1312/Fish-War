@@ -441,7 +441,7 @@ full" / "Opponent left".
 **Files likely touched:** `apps/web/src/net/{remoteSession,serverUrl}.ts`, `apps/web/src/sim/simRunner.ts` (session interface), `apps/web/src/scene/{GameCanvas,SimLoop}.tsx`, `apps/web/src/input/keyboard.ts` (per-role read), `apps/web/src/ui/ConnectionStatus.tsx`
 **Scope:** M–L (split `ConnectionStatus` off if it grows)
 
-### - [ ] Task 19: Server hardening — input ordering, rate and size limits
+### - [x] Task 19: Server hardening — input ordering, rate and size limits
 
 **Description:** The server never trusts the client for results (§8). Beyond the
 parser from Task 16, it adds these rules:

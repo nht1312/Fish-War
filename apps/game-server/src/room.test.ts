@@ -10,6 +10,7 @@ import {
   requestRematch,
   snapshotFor,
   tickRoom,
+  IDLE_AFTER_SECONDS,
   type Room,
 } from "./room";
 
@@ -113,6 +114,44 @@ describe("receiveInput", () => {
     const room = receiveInput(playingRoom(), "fisherman", 42, WALK_LEFT);
     expect(snapshotFor(room, "fisherman")).toMatchObject({ type: "snapshot", ackSeq: 42 });
     expect(snapshotFor(room, "fish")).toMatchObject({ type: "snapshot", ackSeq: 0 });
+  });
+});
+
+describe("input hardening", () => {
+  it("ignores input that is not newer than the last one accepted", () => {
+    const newer = receiveInput(playingRoom(), "fish", 5, SWIM_RIGHT);
+    const stale = receiveInput(newer, "fish", 3, { ...SWIM_RIGHT, move: { x: -1, z: 0 } });
+    expect(stale).toBe(newer);
+    const duplicate = receiveInput(newer, "fish", 5, { ...SWIM_RIGHT, dash: true });
+    expect(duplicate).toBe(newer);
+  });
+
+  it("a flood of inputs between ticks still acts once per tick", () => {
+    const dash = { ...SWIM_RIGHT, dash: true };
+    let room = playingRoom();
+    const staminaBefore = room.match?.fish.stamina ?? 0;
+    for (let seq = 1; seq <= 100; seq++) room = receiveInput(room, "fish", seq, dash);
+    room = tickRoom(room, DEFAULT_CONFIG, DT);
+    expect(room.match?.fish.stamina).toBeCloseTo(staminaBefore - DEFAULT_CONFIG.fish.dashCost, 0);
+  });
+
+  it("treats a seat that has gone silent as idle", () => {
+    let room = receiveInput(playingRoom(), "fish", 1, SWIM_RIGHT);
+    const silentTicks = Math.ceil(IDLE_AFTER_SECONDS / DT) + 1;
+    for (let i = 0; i < silentTicks; i++) room = tickRoom(room, DEFAULT_CONFIG, DT);
+    // By now the fish has glided to a stop instead of swimming on forever.
+    for (let i = 0; i < 30; i++) room = tickRoom(room, DEFAULT_CONFIG, DT);
+    expect(room.match?.fish.velocity.x).toBe(0);
+  });
+
+  it("keeps applying input while the seat keeps talking", () => {
+    let room = playingRoom();
+    const ticks = Math.ceil(IDLE_AFTER_SECONDS / DT) * 2;
+    for (let i = 1; i <= ticks; i++) {
+      room = receiveInput(room, "fish", i, SWIM_RIGHT);
+      room = tickRoom(room, DEFAULT_CONFIG, DT);
+    }
+    expect(room.match?.fish.velocity.x).toBeGreaterThan(0);
   });
 });
 

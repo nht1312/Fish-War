@@ -2,6 +2,7 @@ import { advanceClock, DEFAULT_CONFIG, parseClientMessage } from "@fishwar/game-
 import type { Role, ServerMessage } from "@fishwar/game-types";
 import { WebSocketServer, type WebSocket } from "ws";
 
+import { allowMessage, createRateBucket, isWithinSizeLimit } from "./limits";
 import {
   createRoom,
   joinRoom,
@@ -18,6 +19,10 @@ import {
 
 const DEFAULT_PORT = 8080;
 const MS_PER_SECOND = 1000;
+/** Hard cap enforced by ws itself: anything this big closes the connection. */
+const MAX_PAYLOAD_BYTES = 64 * 1024;
+/** Per-connection message allowance: twice the tick rate, for jitter headroom. */
+const MESSAGES_PER_TICK_ALLOWED = 2;
 
 function send(socket: WebSocket | undefined, message: ServerMessage): void {
   if (socket && socket.readyState === socket.OPEN) socket.send(JSON.stringify(message));
@@ -30,7 +35,8 @@ function main(): void {
   const sockets = new Map<Role, WebSocket>();
   let room = createRoom();
 
-  const wss = new WebSocketServer({ port });
+  const messagesPerSecond = config.tickRate * MESSAGES_PER_TICK_ALLOWED;
+  const wss = new WebSocketServer({ port, maxPayload: MAX_PAYLOAD_BYTES });
 
   wss.on("connection", (socket) => {
     const joined = joinRoom(room, config);
@@ -46,8 +52,13 @@ function main(): void {
     if (!room.match) send(socket, { type: "waiting" });
     console.log(`[game-server] ${role} joined`);
 
+    let bucket = createRateBucket(messagesPerSecond, performance.now());
     socket.on("message", (data) => {
-      const message = parseClientMessage(data.toString(), role);
+      const text = data.toString();
+      const rate = allowMessage(bucket, performance.now(), messagesPerSecond);
+      bucket = rate.bucket;
+      if (!rate.allowed || !isWithinSizeLimit(Buffer.byteLength(text))) return;
+      const message = parseClientMessage(text, role);
       if (message?.type === "input") room = receiveInput(room, role, message.seq, message.input);
       if (message?.type === "rematch") room = requestRematch(room, config);
     });
