@@ -67,7 +67,7 @@ the simulation's shape is real.
 ## Task Index (details in `tasks/todo.md`)
 
 ### Phase 1 — Scene & movement
-- [ ] 1. Basic 3D scene renders
+- [x] 1. Basic 3D scene renders
 - [ ] 2. Fixed-tick simulation drives the scene
 - [ ] 3. Fish swims horizontally
 - [ ] 4. Fish dives and surfaces

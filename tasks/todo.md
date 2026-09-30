@@ -15,7 +15,7 @@ Only task-specific checks are listed below.
 
 ## Phase 1 — Scene & movement
 
-### - [ ] Task 1: Basic 3D scene renders
+### - [x] Task 1: Basic 3D scene renders
 
 **Description:** Add three and React Three Fiber, then render a static scene at `/`:
 a pond (water plane), a dock/shore strip, a placeholder fish mesh, a placeholder
@@ -32,7 +32,7 @@ fisherman mesh, lights, and a fixed camera. The canvas loads client-only.
 
 **Dependencies:** None
 **Deps added:** `three`, `@types/three`, `@react-three/fiber` (justified in `plan.md`)
-**Files likely touched:** `apps/web/package.json`, `apps/web/app/page.tsx`, `apps/web/src/scene/GameCanvas.tsx`, `apps/web/src/scene/{Pond,Dock,FishMesh,FishermanMesh}.tsx`
+**Files likely touched:** `apps/web/package.json`, `apps/web/app/page.tsx`, `apps/web/src/scene/{GameCanvas,GameCanvasLoader}.tsx`, `apps/web/src/scene/sceneConfig.ts`, `apps/web/src/scene/{Pond,Dock,FishMesh,FishermanMesh}.tsx`
 **Scope:** M
 
 ### - [ ] Task 2: Fixed-tick simulation drives the scene
